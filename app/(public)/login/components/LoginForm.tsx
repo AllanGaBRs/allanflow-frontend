@@ -1,0 +1,73 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { useLogin } from "../hooks/useLogin";
+
+export function LoginForm() {
+  const { login, loading, error } = useLogin();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await login(email, password);
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#020B1F] px-4">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.04] p-8 shadow-xl">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-bold text-white">Login</h1>
+          <p className="mt-2 text-sm text-white/50">
+            Entre para acessar seus workspaces
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="mb-2 block text-sm text-white/70">Email</label>
+            <input
+              type="email"
+              placeholder="seuemail@email.com"
+              className="w-full rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-blue-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm text-white/70">Senha</label>
+            <input
+              type="password"
+              placeholder="Digite sua senha"
+              className="w-full rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-400">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-white/50">
+          Não tem conta?{" "}
+          <Link href="/register" className="text-blue-400 hover:underline">
+            Criar conta
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
