@@ -1,4 +1,4 @@
-import type { AuthUser } from "../types/user";
+import { AuthUser } from "../types/user";
 
 export async function getCurrentUserService(): Promise<AuthUser> {
   const response = await fetch("/api/auth/me");
