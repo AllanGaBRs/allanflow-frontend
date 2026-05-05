@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useWorkspaceDetails } from "../hooks/useWorkspaceDetails";
+import { MembersSection } from "../members/components/MembersSection";
+import { WorkspaceLayout } from "../../components/WorkspaceLayout";
 
 type WorkspaceDetailsProps = {
   workspaceId: string;
@@ -11,68 +13,68 @@ export function WorkspaceDetails({ workspaceId }: WorkspaceDetailsProps) {
   const { workspace, loading, error } = useWorkspaceDetails(workspaceId);
 
   return (
-    <div className="min-h-screen bg-[#020B1F] px-4 py-8 text-white">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <WorkspaceLayout>
+      <section className="flex-1 p-8">
+        <header className="mb-8 flex items-center justify-between">
           <div>
             <Link
               href="/workspaces"
-              className="mb-3 inline-block text-sm text-blue-400 hover:underline"
+              className="mb-2 inline-block text-sm font-medium text-blue-600 hover:underline"
             >
               Voltar para workspaces
             </Link>
 
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-2xl font-bold text-slate-800">
               {loading ? "Carregando..." : workspace?.name}
             </h1>
 
-            <p className="mt-1 text-sm text-white/50">
-              Gerencie as tarefas e informações deste workspace
+            <p className="mt-1 text-sm text-slate-500">
+              Gerencie tarefas, membros e informações deste workspace
             </p>
           </div>
 
-          <button className="rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+          <button className="rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700">
             Nova tarefa
           </button>
         </header>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600">
             {error}
           </div>
         )}
 
         {!loading && workspace && (
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-              <p className="text-sm text-white/50">Workspace</p>
-              <h2 className="mt-2 text-xl font-semibold">{workspace.name}</h2>
+          <div className="mb-6 grid gap-6 md:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <p className="text-sm text-slate-500">Workspace</p>
+              <h2 className="mt-2 text-xl font-semibold text-slate-800">
+                {workspace.name}
+              </h2>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-              <p className="text-sm text-white/50">Sua permissão</p>
-              <h2 className="mt-2 text-xl font-semibold">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <p className="text-sm text-slate-500">Sua permissão</p>
+              <h2 className="mt-2 text-xl font-semibold text-slate-800">
                 {workspace.userRole || "MEMBER"}
               </h2>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-              <p className="text-sm text-white/50">Status</p>
-              <h2 className="mt-2 text-xl font-semibold text-green-400">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <p className="text-sm text-slate-500">Status</p>
+              <h2 className="mt-2 text-xl font-semibold text-green-600">
                 Ativo
               </h2>
             </div>
           </div>
         )}
 
-        <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Tarefas</h2>
-              <p className="mt-1 text-sm text-white/50">
-                Em breve, aqui ficará o quadro de tarefas do workspace.
-              </p>
-            </div>
+        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-slate-800">Tarefas</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Em breve, aqui ficará o quadro de tarefas do workspace.
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-4">
@@ -80,13 +82,13 @@ export function WorkspaceDetails({ workspaceId }: WorkspaceDetailsProps) {
               (column) => (
                 <div
                   key={column}
-                  className="min-h-56 rounded-xl border border-white/10 bg-black/20 p-4"
+                  className="min-h-56 rounded-xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <h3 className="mb-4 text-sm font-semibold text-white/70">
+                  <h3 className="mb-4 text-sm font-semibold text-slate-600">
                     {column}
                   </h3>
 
-                  <p className="text-sm text-white/35">
+                  <p className="text-sm text-slate-400">
                     Nenhuma tarefa ainda.
                   </p>
                 </div>
@@ -94,7 +96,9 @@ export function WorkspaceDetails({ workspaceId }: WorkspaceDetailsProps) {
             )}
           </div>
         </section>
-      </div>
-    </div>
+
+        <MembersSection workspaceId={workspaceId} />
+      </section>
+    </WorkspaceLayout>
   );
 }
