@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   FolderKanban,
   Settings,
+  Users,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -13,13 +14,19 @@ type NavBarProps = {
   collapsed: boolean;
   onToggle: () => void;
   variant?: "default" | "workspaces";
+  workspaceId?: string;
+  workspaceRole?: "OWNER" | "ADMIN" | "MEMBER";
 };
 
 export function NavBar({
   collapsed,
   onToggle,
   variant = "default",
+  workspaceId,
+  workspaceRole,
 }: NavBarProps) {
+  const canManageMembers =
+    workspaceRole === "OWNER" || workspaceRole === "ADMIN";
   const defaultMenuItems = [
     {
       label: "Dashboard",
@@ -37,11 +44,23 @@ export function NavBar({
       icon: Settings,
     },
   ];
+  const workspaceMenuItems =
+    workspaceId && canManageMembers
+      ? [
+          ...defaultMenuItems.slice(0, 2),
+          {
+            label: "Membros",
+            href: `/workspaces/${workspaceId}/members`,
+            icon: Users,
+          },
+          defaultMenuItems[2],
+        ]
+      : defaultMenuItems;
   const workspacesMenuItems = defaultMenuItems.filter(
     (item) => item.label !== "Dashboard"
   );
   const menuItems =
-    variant === "workspaces" ? workspacesMenuItems : defaultMenuItems;
+    variant === "workspaces" ? workspacesMenuItems : workspaceMenuItems;
 
   return (
     <aside

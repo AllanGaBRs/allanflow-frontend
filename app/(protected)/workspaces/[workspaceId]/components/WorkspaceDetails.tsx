@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useWorkspaceDetails } from "../hooks/useWorkspaceDetails";
-import { MembersSection } from "../members/components/MembersSection";
 import { WorkspaceLayout } from "../../components/WorkspaceLayout";
 
 type WorkspaceDetailsProps = {
@@ -13,7 +12,10 @@ export function WorkspaceDetails({ workspaceId }: WorkspaceDetailsProps) {
   const { workspace, loading, error } = useWorkspaceDetails(workspaceId);
 
   return (
-    <WorkspaceLayout>
+    <WorkspaceLayout
+      workspaceId={workspaceId}
+      workspaceRole={workspace?.userRole}
+    >
       <section className="flex-1 p-8">
         <header className="mb-8 flex items-center justify-between">
           <div>
@@ -96,8 +98,6 @@ export function WorkspaceDetails({ workspaceId }: WorkspaceDetailsProps) {
             )}
           </div>
         </section>
-
-        <MembersSection workspaceId={workspaceId} />
       </section>
     </WorkspaceLayout>
   );

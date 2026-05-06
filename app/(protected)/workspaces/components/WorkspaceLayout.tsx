@@ -7,9 +7,16 @@ import { WorkspaceHeader } from "./WorkspaceHeader";
 type Props = {
   children: ReactNode;
   navVariant?: "default" | "workspaces";
+  workspaceId?: string;
+  workspaceRole?: "OWNER" | "ADMIN" | "MEMBER";
 };
 
-export function WorkspaceLayout({ children, navVariant = "default" }: Props) {
+export function WorkspaceLayout({
+  children,
+  navVariant = "default",
+  workspaceId,
+  workspaceRole,
+}: Props) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -17,6 +24,8 @@ export function WorkspaceLayout({ children, navVariant = "default" }: Props) {
       <NavBar
         collapsed={collapsed}
         variant={navVariant}
+        workspaceId={workspaceId}
+        workspaceRole={workspaceRole}
         onToggle={() => setCollapsed((prev) => !prev)}
       />
 
