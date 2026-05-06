@@ -9,7 +9,7 @@ export async function getWorkspacesService(): Promise<Workspace[]> {
     throw new Error(data.error || "Erro ao buscar workspaces");
   }
 
-  return data;
+  return Array.isArray(data) ? data : data.workspaces ?? [];
 }
 
 export async function createWorkspaceService(

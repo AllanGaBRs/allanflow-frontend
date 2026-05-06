@@ -32,25 +32,64 @@ export function useWorkspaces() {
   }
 
   async function createWorkspace(name: string) {
-  setCreating(true);
-  setError("");
+    const trimmedName = name.trim();
 
-  try {
-    const workspace = await createWorkspaceService({ name });
-    setWorkspaces((prev) => [...prev, workspace]);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      setError(err.message);
-    } else {
-      setError("Erro inesperado ao criar workspace");
+    if (!trimmedName) {
+      return false;
     }
-  } finally {
-    setCreating(false);
+
+    setCreating(true);
+    setError("");
+
+    try {
+      const workspace = await createWorkspaceService({ name: trimmedName });
+      setWorkspaces((prev) => [...prev, workspace]);
+      return true;
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erro inesperado ao criar workspace");
+      }
+
+      return false;
+    } finally {
+      setCreating(false);
+    }
   }
-}
 
   useEffect(() => {
-    loadWorkspaces();
+    let active = true;
+
+    async function loadInitialWorkspaces() {
+      try {
+        const data = await getWorkspacesService();
+
+        if (active) {
+          setWorkspaces(data);
+        }
+      } catch (err: unknown) {
+        if (!active) {
+          return;
+        }
+
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Erro inesperado ao buscar workspaces");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadInitialWorkspaces();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return {
