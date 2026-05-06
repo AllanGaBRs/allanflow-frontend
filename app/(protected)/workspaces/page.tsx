@@ -1,5 +1,5 @@
-import { WorkspaceList } from "./components/WorkspaceList";
+import { WorkspaceDashboard } from "./components/WorkspaceDashboard";
 
 export default function WorkspacesPage() {
-  return <WorkspaceList />;
+  return <WorkspaceDashboard />;
 }
