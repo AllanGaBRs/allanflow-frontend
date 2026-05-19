@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { WorkspaceDetails } from "./components/WorkspaceDetails";
 import { getWorkspaceDetailsServerService } from "./services/workspaceDetailsServerService";
 
@@ -11,8 +12,13 @@ export default async function WorkspaceDetailsPage({
   params,
 }: WorkspacesDetailsPageProps) {
   const { workspaceId } = await params;
-  const { workspace, error } =
-    await getWorkspaceDetailsServerService(workspaceId);
+  const { workspace, error } = await getWorkspaceDetailsServerService(
+    workspaceId
+  );
+
+  if (!workspace) {
+    redirect("/workspaces");
+  }
 
   return (
     <WorkspaceDetails

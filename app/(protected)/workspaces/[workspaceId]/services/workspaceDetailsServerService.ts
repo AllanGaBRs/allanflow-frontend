@@ -6,6 +6,7 @@ import type { WorkspaceDetails } from "../types/workspaceDetails";
 type WorkspaceDetailsServerResult = {
   workspace: WorkspaceDetails | null;
   error: string;
+  status?: number;
 };
 
 export async function getWorkspaceDetailsServerService(
@@ -16,7 +17,7 @@ export async function getWorkspaceDetailsServerService(
     const accessToken = cookieStore.get("access_token")?.value;
 
     if (!accessToken) {
-      return { workspace: null, error: "Não autenticado" };
+      return { workspace: null, error: "Não autenticado", status: 401 };
     }
 
     const response = await apiServer.get<WorkspaceDetails>(
@@ -28,11 +29,12 @@ export async function getWorkspaceDetailsServerService(
       }
     );
 
-    return { workspace: response.data, error: "" };
+    return { workspace: response.data, error: "", status: response.status };
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       return {
         workspace: null,
+        status: error.response?.status,
         error:
           error.response?.data?.error ||
           error.response?.data?.message ||
