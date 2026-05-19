@@ -5,3 +5,7 @@ export type WorkspaceDetails = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type WorkspaceUpdateRequest = {
+  name: string;
+};
