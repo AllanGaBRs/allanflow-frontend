@@ -71,17 +71,13 @@ export function NavBar({
       }`}
     >
       <div className="flex h-24 items-center justify-center overflow-hidden border-b border-white/10 px-3">
-        {!collapsed ? (
-          <img
-            src="/img/AllanFlow.png"
-            alt="AllanFlow"
-            className="pointer-events-none block max-h-80 w-[300px] object-contain"
-          />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold">
-            AF
-          </div>
-        )}
+        <img
+          src="/img/AllanFlow.png"
+          alt="AllanFlow"
+          className={`pointer-events-none block object-contain transition-all duration-300 ${
+            collapsed ? "w-44 max-w-none" : "w-[350px]"
+          }`}
+        />
       </div>
 
       <div className="px-3 py-4">
