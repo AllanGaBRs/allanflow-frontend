@@ -53,14 +53,6 @@ export async function POST(req: Request) {
       maxAge: data.expires_in,
     });
 
-    response.cookies.set("user_id", decoded.userId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: data.expires_in,
-    });
-
     return response;
   } catch (error: any) {
     console.error(error.response?.data || error.message);

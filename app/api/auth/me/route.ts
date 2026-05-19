@@ -2,7 +2,21 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { jwtDecode } from "jwt-decode";
 import { apiServer } from "../../api-server";
+
+type JwtPayload = {
+  sub: string;
+  userId: string;
+  authorities?: string[];
+  scope?: string;
+};
+
+type AuthMeResponse = {
+  id?: string;
+  email?: string;
+  authorities?: string[];
+};
 
 export async function GET() {
   try {
@@ -16,13 +30,23 @@ export async function GET() {
       );
     }
 
-    const res = await apiServer.get("/auth/me", {
+    const decoded = jwtDecode<JwtPayload>(accessToken);
+    const res = await apiServer.get<AuthMeResponse>("/auth/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
 
-    return NextResponse.json(res.data);
+    return NextResponse.json({
+      ...res.data,
+      id: decoded.userId,
+      email: res.data.email || decoded.sub,
+      authorities:
+        res.data.authorities ||
+        decoded.authorities ||
+        decoded.scope?.split(" ") ||
+        [],
+    });
   } catch (error: any) {
     console.error(error.response?.data || error.message);
 
