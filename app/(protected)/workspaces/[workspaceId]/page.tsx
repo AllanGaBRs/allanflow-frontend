@@ -1,4 +1,5 @@
 import { WorkspaceDetails } from "./components/WorkspaceDetails";
+import { getWorkspaceDetailsServerService } from "./services/workspaceDetailsServerService";
 
 type WorkspacesDetailsPageProps = {
   params: Promise<{
@@ -10,6 +11,14 @@ export default async function WorkspaceDetailsPage({
   params,
 }: WorkspacesDetailsPageProps) {
   const { workspaceId } = await params;
+  const { workspace, error } =
+    await getWorkspaceDetailsServerService(workspaceId);
 
-  return <WorkspaceDetails workspaceId={workspaceId} />;
+  return (
+    <WorkspaceDetails
+      workspaceId={workspaceId}
+      initialWorkspace={workspace}
+      initialError={error}
+    />
+  );
 }

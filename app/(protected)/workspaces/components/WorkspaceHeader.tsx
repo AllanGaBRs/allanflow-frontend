@@ -3,16 +3,22 @@
 import { useUser } from "../../hooks/useUser";
 import { UserMenu } from "./UserMenu";
 
-export function WorkspaceHeader() {
+type WorkspaceHeaderProps = {
+  title?: string;
+  subtitle?: string;
+};
+
+export function WorkspaceHeader({
+  title = "Dashboard",
+  subtitle = "Selecione um workspace para começar",
+}: WorkspaceHeaderProps) {
   const { user, loading } = useUser();
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
       <div>
-        <h1 className="text-lg font-semibold">Dashboard</h1>
-        <p className="text-xs text-slate-500">
-          Selecione um workspace para começar
-        </p>
+        <h1 className="text-lg font-semibold">{title}</h1>
+        {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
       </div>
 
       {loading ? (

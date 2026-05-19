@@ -1,33 +1,39 @@
 "use client";
 
-import Link from "next/link";
 import { Users } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useWorkspaceDetails } from "../../hooks/useWorkspaceDetails";
 import { MembersSection } from "./MembersSection";
+import type { WorkspaceDetails } from "../../types/workspaceDetails";
 
 type WorkspaceMembersPageProps = {
   workspaceId: string;
+  initialWorkspace: WorkspaceDetails | null;
+  initialError: string;
 };
 
-export function WorkspaceMembersPage({ workspaceId }: WorkspaceMembersPageProps) {
-  const { workspace, loading, error } = useWorkspaceDetails(workspaceId);
+export function WorkspaceMembersPage({
+  workspaceId,
+  initialWorkspace,
+  initialError,
+}: WorkspaceMembersPageProps) {
+  const { workspace, loading, error } = useWorkspaceDetails(
+    workspaceId,
+    initialWorkspace,
+    initialError
+  );
+  const headerTitle = loading ? "Carregando..." : workspace?.name ?? "Workspace";
 
   return (
     <WorkspaceLayout
       workspaceId={workspaceId}
       workspaceRole={workspace?.userRole}
+      headerTitle={headerTitle}
+      headerSubtitle=""
     >
       <section className="flex-1 p-8">
         <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <Link
-              href={`/workspaces/${workspaceId}`}
-              className="mb-2 inline-block text-sm font-medium text-blue-600 hover:underline"
-            >
-              Voltar para o workspace
-            </Link>
-
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
                 <Users size={22} />

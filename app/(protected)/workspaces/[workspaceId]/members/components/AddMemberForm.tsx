@@ -5,7 +5,7 @@ import type { MembershipRole } from "../types/member";
 
 type Props = {
   loading: boolean;
-  onSubmit: (email: string, role: MembershipRole) => Promise<void>;
+  onSubmit: (email: string, role: MembershipRole) => Promise<boolean>;
 };
 
 export function AddMemberForm({ loading, onSubmit }: Props) {
@@ -15,30 +15,33 @@ export function AddMemberForm({ loading, onSubmit }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    await onSubmit(email, role);
+    const created = await onSubmit(email, role);
 
-    setEmail("");
-    setRole("MEMBER");
+    if (created) {
+      setEmail("");
+      setRole("MEMBER");
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 rounded-xl border border-slate-200 bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <h3 className="mb-4 text-sm font-semibold text-slate-800">
         Adicionar membro
       </h3>
 
-      <div className="grid gap-3 md:grid-cols-[1fr_140px_auto]">
+      <div className="grid gap-3">
         <input
           type="email"
           placeholder="email@exemplo.com"
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          autoFocus
         />
 
         <select
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           value={role}
           onChange={(e) => setRole(e.target.value as MembershipRole)}
         >
@@ -49,7 +52,7 @@ export function AddMemberForm({ loading, onSubmit }: Props) {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="min-h-11 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Adicionando..." : "Adicionar"}
         </button>

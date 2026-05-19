@@ -4,10 +4,16 @@ import { useEffect, useState } from "react";
 import { getWorkspaceDetailsService } from "../services/workspaceDetailsService";
 import type { WorkspaceDetails } from "../types/workspaceDetails";
 
-export function useWorkspaceDetails(workspaceId: string) {
-  const [workspace, setWorkspace] = useState<WorkspaceDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export function useWorkspaceDetails(
+  workspaceId: string,
+  initialWorkspace: WorkspaceDetails | null = null,
+  initialError = ""
+) {
+  const [workspace, setWorkspace] = useState<WorkspaceDetails | null>(
+    initialWorkspace
+  );
+  const [loading, setLoading] = useState(!initialWorkspace && !initialError);
+  const [error, setError] = useState(initialError);
 
   async function loadWorkspace() {
     setLoading(true);
@@ -28,6 +34,10 @@ export function useWorkspaceDetails(workspaceId: string) {
   }
 
   useEffect(() => {
+    if (initialWorkspace?.id === workspaceId || initialError) {
+      return;
+    }
+
     loadWorkspace();
   }, [workspaceId]);
 

@@ -9,6 +9,8 @@ type Props = {
   navVariant?: "default" | "workspaces";
   workspaceId?: string;
   workspaceRole?: "OWNER" | "ADMIN" | "MEMBER";
+  headerTitle?: string;
+  headerSubtitle?: string;
 };
 
 export function WorkspaceLayout({
@@ -16,6 +18,8 @@ export function WorkspaceLayout({
   navVariant = "default",
   workspaceId,
   workspaceRole,
+  headerTitle,
+  headerSubtitle,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -34,7 +38,7 @@ export function WorkspaceLayout({
           collapsed ? "pl-20" : "pl-64"
         }`}
       >
-        <WorkspaceHeader />
+        <WorkspaceHeader title={headerTitle} subtitle={headerSubtitle} />
 
         <div className="flex flex-1">{children}</div>
       </main>

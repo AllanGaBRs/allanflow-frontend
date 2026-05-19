@@ -13,18 +13,24 @@ export function MemberCard({
   onUpdateRole,
   onRemove,
 }: Props) {
+  const displayName = member.userName || member.userEmail || "Usuário";
+
   return (
     <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
-          {member.userName?.charAt(0)?.toUpperCase() || "U"}
+          {displayName.charAt(0).toUpperCase()}
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-slate-800">
-            {member.userName}
+          <p className="text-sm font-semibold text-slate-950">
+            {displayName}
           </p>
-          <p className="text-xs text-slate-500">{member.userEmail}</p>
+          {member.userEmail && (
+            <p className="text-xs font-medium text-slate-700">
+              {member.userEmail}
+            </p>
+          )}
         </div>
       </div>
 

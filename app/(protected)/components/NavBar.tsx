@@ -30,7 +30,7 @@ export function NavBar({
   const defaultMenuItems = [
     {
       label: "Dashboard",
-      href: "/workspaces",
+      href: workspaceId ? `/workspaces/${workspaceId}` : "/workspaces",
       icon: LayoutDashboard,
     },
     {
@@ -47,7 +47,7 @@ export function NavBar({
   const workspaceMenuItems =
     workspaceId && canManageMembers
       ? [
-          ...defaultMenuItems.slice(0, 2),
+          defaultMenuItems[0],
           {
             label: "Membros",
             href: `/workspaces/${workspaceId}/members`,
@@ -55,16 +55,18 @@ export function NavBar({
           },
           defaultMenuItems[2],
         ]
-      : defaultMenuItems;
+      : workspaceId
+        ? [defaultMenuItems[0], defaultMenuItems[2]]
+        : defaultMenuItems;
   const workspacesMenuItems = defaultMenuItems.filter(
-    (item) => item.label !== "Dashboard"
+    (item) => item.label === "Workspaces"
   );
   const menuItems =
     variant === "workspaces" ? workspacesMenuItems : workspaceMenuItems;
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 h-screen border-r border-white/10 bg-[#1F2A3D] text-white transition-all duration-300 ${
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-white/10 bg-[#1F2A3D] text-white transition-all duration-300 ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
@@ -117,6 +119,19 @@ export function NavBar({
           );
         })}
       </nav>
+
+      {workspaceId && variant !== "workspaces" && (
+        <div className="mt-auto px-3 py-4">
+          <Link
+            href="/workspaces"
+            title={collapsed ? "Workspaces" : undefined}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+          >
+            <FolderKanban size={18} />
+            {!collapsed && <span>Workspaces</span>}
+          </Link>
+        </div>
+      )}
     </aside>
   );
 }

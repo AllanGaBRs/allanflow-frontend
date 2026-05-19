@@ -36,8 +36,10 @@ export function useMembers(workspaceId: string) {
     try {
       const member = await addMemberService(workspaceId, { email, role });
       setMembers((prev) => [...prev, member]);
+      return true;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao adicionar membro");
+      return false;
     } finally {
       setSaving(false);
     }
