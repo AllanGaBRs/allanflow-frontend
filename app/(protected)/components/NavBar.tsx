@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   FolderKanban,
+  Kanban,
   Settings,
   Users,
   PanelLeftClose,
@@ -39,8 +40,13 @@ export function NavBar({
       icon: FolderKanban,
     },
     {
+      label: "Boards",
+      href: workspaceId ? `/workspaces/${workspaceId}/boards` : "/workspaces",
+      icon: Kanban,
+    },
+    {
       label: "Configurações",
-      href: "/settings",
+      href: workspaceId ? `/workspaces/${workspaceId}/settings` : "/settings",
       icon: Settings,
     },
   ];
@@ -48,12 +54,13 @@ export function NavBar({
     workspaceId && canManageMembers
       ? [
           defaultMenuItems[0],
+          defaultMenuItems[2],
           {
             label: "Membros",
             href: `/workspaces/${workspaceId}/members`,
             icon: Users,
           },
-          defaultMenuItems[2],
+          defaultMenuItems[3],
         ]
       : workspaceId
         ? [defaultMenuItems[0], defaultMenuItems[2]]

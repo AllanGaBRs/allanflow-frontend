@@ -34,13 +34,13 @@ export function WorkspaceLayout({
       />
 
       <main
-        className={`flex min-h-screen flex-col transition-all duration-300 ${
+        className={`flex min-h-screen min-w-0 flex-col overflow-x-hidden transition-all duration-300 ${
           collapsed ? "pl-20" : "pl-64"
         }`}
       >
         <WorkspaceHeader title={headerTitle} subtitle={headerSubtitle} />
 
-        <div className="flex flex-1">{children}</div>
+        <div className="flex min-w-0 flex-1 overflow-x-hidden">{children}</div>
       </main>
     </div>
   );
