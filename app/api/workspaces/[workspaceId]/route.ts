@@ -1,8 +1,12 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { apiServer } from "../../api-server";
+import {
+  getAuthorizationHeader,
+  unauthorizedResponse,
+} from "../../_utils/auth";
+import { backendErrorResponse } from "../../_utils/errors";
+import { jsonResponse } from "../../_utils/responses";
 
 type Params = {
   params: Promise<{
@@ -14,33 +18,21 @@ export async function GET(req: Request, { params }: Params) {
   const { workspaceId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "Não autenticado" },
-        { status: 401 }
-      );
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.get(`/workspaces/${workspaceId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar workspace",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar workspace",
+    });
   }
 }
 
@@ -49,33 +41,21 @@ export async function PUT(req: Request, { params }: Params) {
   const body = await req.json();
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "Não autenticado" },
-        { status: 401 }
-      );
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.put(`/workspaces/${workspaceId}`, body, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao atualizar workspace",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao atualizar workspace",
+    });
   }
 }
 
@@ -83,32 +63,20 @@ export async function DELETE(req: Request, { params }: Params) {
   const { workspaceId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "Não autenticado" },
-        { status: 401 }
-      );
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     await apiServer.delete(`/workspaces/${workspaceId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
     return new Response(null, { status: 204 });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao excluir workspace",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao excluir workspace",
+    });
   }
 }

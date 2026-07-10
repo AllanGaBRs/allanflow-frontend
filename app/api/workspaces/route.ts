@@ -1,38 +1,27 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { apiServer } from "../api-server";
+import { getAuthorizationHeader, unauthorizedResponse } from "../_utils/auth";
+import { backendErrorResponse } from "../_utils/errors";
+import { createdResponse, jsonResponse } from "../_utils/responses";
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "Não autenticado" },
-        { status: 401 }
-      );
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.get("/workspaces/me", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar workspaces",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar workspaces",
+    });
   }
 }
 
@@ -40,36 +29,24 @@ export async function POST(req: Request) {
   const { name } = await req.json();
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "Não autenticado" },
-        { status: 401 }
-      );
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.post(
       "/workspaces",
       { name },
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
-    return NextResponse.json(res.data, { status: 201 });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao criar workspace",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+    return createdResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao criar workspace",
+    });
   }
 }
