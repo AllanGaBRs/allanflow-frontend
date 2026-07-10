@@ -1,9 +1,12 @@
 export const runtime = "nodejs";
 
-import { apiServer } from "../api-server";
-import { getAuthorizationHeader, unauthorizedResponse } from "../_utils/auth";
-import { backendErrorResponse } from "../_utils/errors";
-import { createdResponse, jsonResponse } from "../_utils/responses";
+import { apiServer } from "@/app/api/api-server";
+import {
+  getAuthorizationHeader,
+  unauthorizedResponse,
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { createdResponse, jsonResponse } from "@/app/api/_utils/responses";
 
 export async function GET() {
   try {

@@ -1,12 +1,12 @@
 export const runtime = "nodejs";
 
-import { apiServer } from "../../api-server";
+import { apiServer } from "@/app/api/api-server";
 import {
   getAuthorizationHeader,
   unauthorizedResponse,
-} from "../../_utils/auth";
-import { backendErrorResponse } from "../../_utils/errors";
-import { jsonResponse } from "../../_utils/responses";
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { jsonResponse } from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
