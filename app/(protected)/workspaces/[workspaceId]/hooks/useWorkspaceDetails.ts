@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getWorkspaceDetailsService } from "../services/workspaceDetailsService";
 import type { WorkspaceDetails } from "../types/workspaceDetails";
 
@@ -15,7 +15,7 @@ export function useWorkspaceDetails(
   const [loading, setLoading] = useState(!initialWorkspace && !initialError);
   const [error, setError] = useState(initialError);
 
-  async function loadWorkspace() {
+  const loadWorkspace = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -31,15 +31,52 @@ export function useWorkspaceDetails(
     } finally {
       setLoading(false);
     }
-  }
+  }, [workspaceId]);
 
   useEffect(() => {
     if (initialWorkspace?.id === workspaceId || initialError) {
       return;
     }
 
-    loadWorkspace();
-  }, [workspaceId]);
+    let active = true;
+
+    async function loadInitialWorkspace() {
+      await Promise.resolve();
+
+      if (active) {
+        setLoading(true);
+        setError("");
+      }
+
+      try {
+        const data = await getWorkspaceDetailsService(workspaceId);
+
+        if (active) {
+          setWorkspace(data);
+        }
+      } catch (err: unknown) {
+        if (!active) {
+          return;
+        }
+
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Erro inesperado ao buscar workspace");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadInitialWorkspace();
+
+    return () => {
+      active = false;
+    };
+  }, [initialError, initialWorkspace?.id, workspaceId]);
 
   return {
     workspace,

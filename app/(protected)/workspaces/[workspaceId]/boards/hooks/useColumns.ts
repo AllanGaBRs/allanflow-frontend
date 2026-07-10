@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   createColumnService,
   deleteColumnService,
@@ -23,7 +23,7 @@ export function useColumns(
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadColumns() {
+  const loadColumns = useCallback(async () => {
     if (!boardId) {
       setColumns([]);
       setLoading(false);
@@ -41,7 +41,7 @@ export function useColumns(
     } finally {
       setLoading(false);
     }
-  }
+  }, [boardId, workspaceId]);
 
   async function createColumn(name: string, position?: number) {
     if (!boardId) {
@@ -166,8 +166,48 @@ export function useColumns(
   }
 
   useEffect(() => {
-    loadColumns();
-  }, [workspaceId, boardId]);
+    let active = true;
+
+    async function loadInitialColumns() {
+      await Promise.resolve();
+
+      if (!boardId) {
+        if (active) {
+          setColumns([]);
+          setLoading(false);
+        }
+
+        return;
+      }
+
+      if (active) {
+        setLoading(true);
+        setError("");
+      }
+
+      try {
+        const data = await getColumnsService(workspaceId, boardId);
+
+        if (active) {
+          setColumns(data);
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Erro ao buscar colunas");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadInitialColumns();
+
+    return () => {
+      active = false;
+    };
+  }, [boardId, workspaceId]);
 
   return {
     columns,

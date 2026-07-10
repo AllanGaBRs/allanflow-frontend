@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertCircle, Kanban, Settings2 } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useBoards } from "../hooks/useBoards";
@@ -29,12 +29,6 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
   } = useColumns(workspaceId, selectedBoard?.id, {
     initialColumns: selectedBoard?.columns,
   });
-
-  useEffect(() => {
-    if (!selectedBoardId && boards.length > 0) {
-      setSelectedBoardId(boards[0].id);
-    }
-  }, [boards, selectedBoardId]);
 
   return (
     <WorkspaceLayout
