@@ -1,9 +1,13 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
-import { apiServer } from "../../api-server";
+import { apiServer } from "@/app/api/api-server";
+import {
+  getAccessToken,
+  unauthorizedResponse,
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { jsonResponse } from "@/app/api/_utils/responses";
 
 type JwtPayload = {
   sub: string;
@@ -20,14 +24,10 @@ type AuthMeResponse = {
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
-    const accessToken = (await cookieStore).get("access_token")?.value;
+    const accessToken = await getAccessToken();
 
     if (!accessToken) {
-      return NextResponse.json(
-        { error: "Não autenticado" },
-        { status: 401 }
-      );
+      return unauthorizedResponse();
     }
 
     const decoded = jwtDecode<JwtPayload>(accessToken);
@@ -37,7 +37,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({
+    return jsonResponse({
       ...res.data,
       id: decoded.userId,
       email: res.data.email || decoded.sub,
@@ -47,15 +47,9 @@ export async function GET() {
         decoded.scope?.split(" ") ||
         [],
     });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar usuário",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar usuário",
+    });
   }
 }

@@ -1,8 +1,12 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { apiServer } from "../../../api-server";
+import { apiServer } from "@/app/api/api-server";
+import {
+  getAuthorizationHeader,
+  unauthorizedResponse,
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { createdResponse, jsonResponse } from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
@@ -14,30 +18,24 @@ export async function GET(req: Request, { params }: Params) {
   const { workspaceId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.get(`/workspaces/${workspaceId}/members`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar membros",
-        details: error.response?.data || error.message,
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar membros",
+      statusMessages: {
+        403: "Você não tem permissão para acessar estes membros.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }
 
@@ -46,33 +44,29 @@ export async function POST(req: Request, { params }: Params) {
   const body = await req.json();
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.post(
       `/workspaces/${workspaceId}/members`,
       body,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
-    return NextResponse.json(res.data, { status: 201 });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao adicionar membro",
-        details: error.response?.data || error.message,
+    return createdResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao adicionar membro",
+      statusMessages: {
+        403: "Você não tem permissão para adicionar membros.",
+        404: "Usuário ou workspace não encontrado.",
+        409: "Este usuário já faz parte do workspace.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }

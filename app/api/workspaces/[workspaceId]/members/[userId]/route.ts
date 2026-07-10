@@ -1,8 +1,12 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { apiServer } from "../../../../api-server";
+import { apiServer } from "@/app/api/api-server";
+import {
+  getAuthorizationHeader,
+  unauthorizedResponse,
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { jsonResponse } from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
@@ -16,34 +20,29 @@ export async function PUT(req: Request, { params }: Params) {
   const body = await req.json();
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.put(
       `/workspaces/${workspaceId}/members/${userId}`,
       body,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao atualizar membro",
-        details: error.response?.data || error.message,
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao atualizar membro",
+      statusMessages: {
+        403: "Você não tem permissão para atualizar este membro.",
+        404: "Membro não encontrado.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }
 
@@ -51,29 +50,24 @@ export async function DELETE(req: Request, { params }: Params) {
   const { workspaceId, userId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     await apiServer.delete(`/workspaces/${workspaceId}/members/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
-    return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao remover membro",
-        details: error.response?.data || error.message,
+    return new Response(null, { status: 204 });
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao remover membro",
+      statusMessages: {
+        403: "Você não tem permissão para remover este membro.",
+        404: "Membro não encontrado.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }
