@@ -6,13 +6,23 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
-import { createdResponse, jsonResponse } from "@/app/api/_utils/responses";
+import {
+  createdResponse,
+  jsonResponse,
+  normalizeListResponse,
+} from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
     workspaceId: string;
     boardId: string;
   }>;
+};
+
+type ColumnResponse = {
+  id: string;
+  name: string;
+  position: number;
 };
 
 export async function GET(req: Request, { params }: Params) {
@@ -32,7 +42,9 @@ export async function GET(req: Request, { params }: Params) {
       }
     );
 
-    return jsonResponse(res.data);
+    return jsonResponse(
+      normalizeListResponse<ColumnResponse, "columns">(res.data, "columns")
+    );
   } catch (error: unknown) {
     return backendErrorResponse(error, {
       fallback: "Erro ao buscar colunas",

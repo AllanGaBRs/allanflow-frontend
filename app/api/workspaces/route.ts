@@ -6,7 +6,17 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
-import { createdResponse, jsonResponse } from "@/app/api/_utils/responses";
+import {
+  createdResponse,
+  jsonResponse,
+  normalizeListResponse,
+} from "@/app/api/_utils/responses";
+
+type WorkspaceResponse = {
+  id: string;
+  name: string;
+  userRole?: "OWNER" | "ADMIN" | "MEMBER";
+};
 
 export async function GET() {
   try {
@@ -20,7 +30,12 @@ export async function GET() {
       headers,
     });
 
-    return jsonResponse(res.data);
+    return jsonResponse(
+      normalizeListResponse<WorkspaceResponse, "workspaces">(
+        res.data,
+        "workspaces"
+      )
+    );
   } catch (error: unknown) {
     return backendErrorResponse(error, {
       fallback: "Erro ao buscar workspaces",

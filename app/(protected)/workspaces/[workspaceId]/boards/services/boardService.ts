@@ -2,10 +2,10 @@ import { api } from "@/app/api/api";
 import type { Board, BoardCreatePayload, BoardUpdatePayload } from "../types/board";
 
 export async function getBoardsService(workspaceId: string): Promise<Board[]> {
-  const { data } = await api.get<Board[] | { boards?: Board[] }>(
+  const { data } = await api.get<Board[]>(
     `/workspaces/${workspaceId}/boards`
   );
-  return Array.isArray(data) ? data : data.boards ?? [];
+  return data;
 }
 
 export async function createBoardService(

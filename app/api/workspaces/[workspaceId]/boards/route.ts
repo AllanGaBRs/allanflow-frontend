@@ -6,12 +6,23 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
-import { createdResponse, jsonResponse } from "@/app/api/_utils/responses";
+import {
+  createdResponse,
+  jsonResponse,
+  normalizeListResponse,
+} from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
     workspaceId: string;
   }>;
+};
+
+type BoardResponse = {
+  id: string;
+  name: string;
+  description: string | null;
+  columns: unknown[];
 };
 
 export async function GET(req: Request, { params }: Params) {
@@ -28,7 +39,9 @@ export async function GET(req: Request, { params }: Params) {
       headers,
     });
 
-    return jsonResponse(res.data);
+    return jsonResponse(
+      normalizeListResponse<BoardResponse, "boards">(res.data, "boards")
+    );
   } catch (error: unknown) {
     return backendErrorResponse(error, {
       fallback: "Erro ao buscar boards",
