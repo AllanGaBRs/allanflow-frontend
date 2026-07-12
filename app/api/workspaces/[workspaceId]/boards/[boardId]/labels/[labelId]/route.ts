@@ -100,6 +100,8 @@ export async function DELETE(req: Request, { params }: Params) {
       statusMessages: {
         403: "Você não tem permissão para excluir esta label.",
         404: "Label ou board não encontrado.",
+        409: "Não é possível excluir uma label que está em uso por tasks.",
+        500: "Erro interno",
       },
     });
   }
