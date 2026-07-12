@@ -16,6 +16,35 @@ type Params = {
   }>;
 };
 
+export async function GET(req: Request, { params }: Params) {
+  const { workspaceId, boardId, labelId } = await params;
+
+  try {
+    const headers = await getAuthorizationHeader();
+
+    if (!headers) {
+      return unauthorizedResponse();
+    }
+
+    const res = await apiServer.get(
+      `/workspaces/${workspaceId}/boards/${boardId}/labels/${labelId}`,
+      {
+        headers,
+      }
+    );
+
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar label",
+      statusMessages: {
+        403: "Você não tem permissão para acessar esta label.",
+        404: "Label ou board não encontrado.",
+      },
+    });
+  }
+}
+
 export async function PUT(req: Request, { params }: Params) {
   const { workspaceId, boardId, labelId } = await params;
   const body = await req.json();

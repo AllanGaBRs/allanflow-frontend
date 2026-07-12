@@ -26,6 +26,17 @@ export async function createLabelService(
   return data;
 }
 
+export async function getLabelService(
+  workspaceId: string,
+  boardId: string,
+  labelId: string
+): Promise<Label> {
+  const { data } = await api.get<Label>(
+    `${labelUrl(workspaceId, boardId)}/${labelId}`
+  );
+  return data;
+}
+
 export async function updateLabelService(
   workspaceId: string,
   boardId: string,
