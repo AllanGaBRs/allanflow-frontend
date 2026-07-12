@@ -4,7 +4,12 @@ import { useState } from "react";
 import { X } from "lucide-react";
 
 type LabelFormModalProps = {
+  title: string;
+  description: string;
+  submitLabel: string;
   loading: boolean;
+  initialName?: string;
+  initialColor?: string;
   onClose: () => void;
   onSubmit: (name: string, color: string) => Promise<boolean>;
 };
@@ -12,12 +17,17 @@ type LabelFormModalProps = {
 const DEFAULT_LABEL_COLOR = "#2563eb";
 
 export function LabelFormModal({
+  title,
+  description,
+  submitLabel,
   loading,
+  initialName = "",
+  initialColor = DEFAULT_LABEL_COLOR,
   onClose,
   onSubmit,
 }: LabelFormModalProps) {
-  const [name, setName] = useState("");
-  const [color, setColor] = useState(DEFAULT_LABEL_COLOR);
+  const [name, setName] = useState(initialName);
+  const [color, setColor] = useState(initialColor);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,11 +57,9 @@ export function LabelFormModal({
               id="label-form-title"
               className="text-lg font-semibold text-slate-950"
             >
-              Nova label
+              {title}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Crie um marcador para usar nas tasks deste board.
-            </p>
+            <p className="mt-1 text-sm text-slate-500">{description}</p>
           </div>
 
           <button
@@ -122,7 +130,7 @@ export function LabelFormModal({
             disabled={loading}
             className="min-h-11 w-full rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Salvando..." : "Criar label"}
+            {loading ? "Salvando..." : submitLabel}
           </button>
         </form>
       </div>

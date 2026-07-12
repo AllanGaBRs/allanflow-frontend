@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useLabels } from "../hooks/useLabels";
 import { LabelBadge } from "./LabelBadge";
+import { LabelDeleteModal } from "./LabelDeleteModal";
 import { LabelFormModal } from "./LabelFormModal";
+import type { Label } from "../types/label";
 
 type LabelsManageSectionProps = {
   workspaceId: string;
@@ -16,10 +18,17 @@ export function LabelsManageSection({
   boardId,
 }: LabelsManageSectionProps) {
   const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
-  const { labels, loading, saving, error, createLabel } = useLabels(
-    workspaceId,
-    boardId
-  );
+  const [editingLabel, setEditingLabel] = useState<Label | null>(null);
+  const [deletingLabel, setDeletingLabel] = useState<Label | null>(null);
+  const {
+    labels,
+    loading,
+    saving,
+    error,
+    createLabel,
+    updateLabel,
+    deleteLabel,
+  } = useLabels(workspaceId, boardId);
 
   return (
     <div className="mt-8 border-t border-slate-200 pt-5">
@@ -61,18 +70,72 @@ export function LabelsManageSection({
       )}
 
       {!loading && labels.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           {labels.map((label) => (
-            <LabelBadge key={label.id} label={label} />
+            <div
+              key={label.id}
+              className="flex min-w-0 flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <LabelBadge label={label} />
+
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingLabel(label)}
+                  disabled={saving}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  aria-label="Editar label"
+                >
+                  <Pencil size={16} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDeletingLabel(label)}
+                  disabled={saving}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  aria-label="Excluir label"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}
 
       {isCreateLabelModalOpen && (
         <LabelFormModal
+          title="Nova label"
+          description="Crie um marcador para usar nas tasks deste board."
+          submitLabel="Criar label"
           loading={saving}
           onClose={() => setIsCreateLabelModalOpen(false)}
           onSubmit={createLabel}
+        />
+      )}
+
+      {editingLabel && (
+        <LabelFormModal
+          title="Editar label"
+          description="Atualize o nome ou a cor desta label."
+          submitLabel="Salvar label"
+          loading={saving}
+          initialName={editingLabel.name}
+          initialColor={editingLabel.color}
+          onClose={() => setEditingLabel(null)}
+          onSubmit={(labelName, color) =>
+            updateLabel(editingLabel.id, labelName, color)
+          }
+        />
+      )}
+
+      {deletingLabel && (
+        <LabelDeleteModal
+          label={deletingLabel}
+          loading={saving}
+          onClose={() => setDeletingLabel(null)}
+          onConfirm={() => deleteLabel(deletingLabel.id)}
         />
       )}
     </div>

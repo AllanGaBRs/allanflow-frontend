@@ -1,5 +1,9 @@
 import { api } from "@/app/api/api";
-import type { Label, LabelCreatePayload } from "../types/label";
+import type {
+  Label,
+  LabelCreatePayload,
+  LabelUpdatePayload,
+} from "../types/label";
 
 function labelUrl(workspaceId: string, boardId: string) {
   return `/workspaces/${workspaceId}/boards/${boardId}/labels`;
@@ -20,4 +24,25 @@ export async function createLabelService(
 ): Promise<Label> {
   const { data } = await api.post<Label>(labelUrl(workspaceId, boardId), payload);
   return data;
+}
+
+export async function updateLabelService(
+  workspaceId: string,
+  boardId: string,
+  labelId: string,
+  payload: LabelUpdatePayload
+): Promise<Label> {
+  const { data } = await api.put<Label>(
+    `${labelUrl(workspaceId, boardId)}/${labelId}`,
+    payload
+  );
+  return data;
+}
+
+export async function deleteLabelService(
+  workspaceId: string,
+  boardId: string,
+  labelId: string
+): Promise<void> {
+  await api.delete(`${labelUrl(workspaceId, boardId)}/${labelId}`);
 }

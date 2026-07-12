@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   createLabelService,
+  deleteLabelService,
   getLabelsService,
+  updateLabelService,
 } from "../services/labelService";
 import type { Label } from "../types/label";
 
@@ -12,6 +14,40 @@ const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
 function normalizeColor(color: string) {
   const trimmedColor = color.trim();
   return trimmedColor.startsWith("#") ? trimmedColor : `#${trimmedColor}`;
+}
+
+function validateLabel(name: string, color: string) {
+  const trimmedName = name.trim();
+  const normalizedColor = normalizeColor(color);
+
+  if (trimmedName.length < 2) {
+    return {
+      error: "O nome da label deve ter pelo menos 2 caracteres.",
+      payload: null,
+    };
+  }
+
+  if (trimmedName.length > 150) {
+    return {
+      error: "O nome da label deve ter no máximo 150 caracteres.",
+      payload: null,
+    };
+  }
+
+  if (!HEX_COLOR_REGEX.test(normalizedColor)) {
+    return {
+      error: "Use uma cor em hexadecimal, como #2563eb.",
+      payload: null,
+    };
+  }
+
+  return {
+    error: "",
+    payload: {
+      name: trimmedName,
+      color: normalizedColor,
+    },
+  };
 }
 
 export function useLabels(workspaceId: string, boardId: string | undefined) {
@@ -45,21 +81,10 @@ export function useLabels(workspaceId: string, boardId: string | undefined) {
       return false;
     }
 
-    const trimmedName = name.trim();
-    const normalizedColor = normalizeColor(color);
+    const { error: validationError, payload } = validateLabel(name, color);
 
-    if (trimmedName.length < 2) {
-      setError("O nome da label deve ter pelo menos 2 caracteres.");
-      return false;
-    }
-
-    if (trimmedName.length > 150) {
-      setError("O nome da label deve ter no máximo 150 caracteres.");
-      return false;
-    }
-
-    if (!HEX_COLOR_REGEX.test(normalizedColor)) {
-      setError("Use uma cor em hexadecimal, como #2563eb.");
+    if (!payload) {
+      setError(validationError);
       return false;
     }
 
@@ -67,14 +92,58 @@ export function useLabels(workspaceId: string, boardId: string | undefined) {
     setError("");
 
     try {
-      await createLabelService(workspaceId, boardId, {
-        name: trimmedName,
-        color: normalizedColor,
-      });
+      await createLabelService(workspaceId, boardId, payload);
       await loadLabels();
       return true;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao criar label");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function updateLabel(labelId: string, name: string, color: string) {
+    if (!boardId) {
+      return false;
+    }
+
+    const { error: validationError, payload } = validateLabel(name, color);
+
+    if (!payload) {
+      setError(validationError);
+      return false;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      await updateLabelService(workspaceId, boardId, labelId, payload);
+      await loadLabels();
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao atualizar label");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteLabel(labelId: string) {
+    if (!boardId) {
+      return false;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      await deleteLabelService(workspaceId, boardId, labelId);
+      await loadLabels();
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir label");
       return false;
     } finally {
       setSaving(false);
@@ -131,6 +200,8 @@ export function useLabels(workspaceId: string, boardId: string | undefined) {
     saving,
     error,
     createLabel,
+    updateLabel,
+    deleteLabel,
     loadLabels,
   };
 }
