@@ -1,8 +1,16 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { apiServer } from "../../../api-server";
+import { apiServer } from "@/app/api/api-server";
+import {
+  getAuthorizationHeader,
+  unauthorizedResponse,
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import {
+  createdResponse,
+  jsonResponse,
+  normalizeListResponse,
+} from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
@@ -10,34 +18,37 @@ type Params = {
   }>;
 };
 
+type BoardResponse = {
+  id: string;
+  name: string;
+  description: string | null;
+  columns: unknown[];
+};
+
 export async function GET(req: Request, { params }: Params) {
   const { workspaceId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.get(`/workspaces/${workspaceId}/boards`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
     });
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar boards",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
+    return jsonResponse(
+      normalizeListResponse<BoardResponse, "boards">(res.data, "boards")
     );
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar boards",
+      statusMessages: {
+        403: "Você não tem permissão para acessar estes boards.",
+      },
+    });
   }
 }
 
@@ -46,33 +57,28 @@ export async function POST(req: Request, { params }: Params) {
   const body = await req.json();
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.post(
       `/workspaces/${workspaceId}/boards`,
       body,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
-    return NextResponse.json(res.data, { status: 201 });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao criar board",
-        details: error.response?.data || error.message,
+    return createdResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao criar board",
+      statusMessages: {
+        403: "Você não tem permissão para criar boards.",
+        409: "Já existe um board com este nome neste workspace.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }

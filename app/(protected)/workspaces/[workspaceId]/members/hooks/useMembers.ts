@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   addMemberService,
   getMembersService,
@@ -15,7 +15,7 @@ export function useMembers(workspaceId: string) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadMembers() {
+  const loadMembers = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -27,7 +27,7 @@ export function useMembers(workspaceId: string) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [workspaceId]);
 
   async function addMember(email: string, role: MembershipRole) {
     setSaving(true);
@@ -81,7 +81,38 @@ export function useMembers(workspaceId: string) {
   }
 
   useEffect(() => {
-    loadMembers();
+    let active = true;
+
+    async function loadInitialMembers() {
+      await Promise.resolve();
+
+      if (active) {
+        setLoading(true);
+        setError("");
+      }
+
+      try {
+        const data = await getMembersService(workspaceId);
+
+        if (active) {
+          setMembers(data);
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Erro ao buscar membros");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadInitialMembers();
+
+    return () => {
+      active = false;
+    };
   }, [workspaceId]);
 
   return {

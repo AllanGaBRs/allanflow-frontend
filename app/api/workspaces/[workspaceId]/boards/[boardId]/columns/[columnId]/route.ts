@@ -1,8 +1,12 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { apiServer } from "../../../../../../api-server";
+import { apiServer } from "@/app/api/api-server";
+import {
+  getAuthorizationHeader,
+  unauthorizedResponse,
+} from "@/app/api/_utils/auth";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { jsonResponse } from "@/app/api/_utils/responses";
 
 type Params = {
   params: Promise<{
@@ -16,33 +20,28 @@ export async function GET(req: Request, { params }: Params) {
   const { workspaceId, boardId, columnId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.get(
       `/workspaces/${workspaceId}/boards/${boardId}/columns/${columnId}`,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar coluna",
-        details: error.response?.data || error.message,
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao buscar coluna",
+      statusMessages: {
+        403: "Você não tem permissão para acessar esta coluna.",
+        404: "Coluna ou board não encontrado.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }
 
@@ -51,34 +50,29 @@ export async function PUT(req: Request, { params }: Params) {
   const body = await req.json();
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     const res = await apiServer.put(
       `/workspaces/${workspaceId}/boards/${boardId}/columns/${columnId}`,
       body,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
-    return NextResponse.json(res.data);
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao atualizar coluna",
-        details: error.response?.data || error.message,
+    return jsonResponse(res.data);
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao atualizar coluna",
+      statusMessages: {
+        403: "Você não tem permissão para atualizar esta coluna.",
+        404: "Coluna ou board não encontrado.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }
 
@@ -86,32 +80,27 @@ export async function DELETE(req: Request, { params }: Params) {
   const { workspaceId, boardId, columnId } = await params;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
+    const headers = await getAuthorizationHeader();
 
-    if (!accessToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (!headers) {
+      return unauthorizedResponse();
     }
 
     await apiServer.delete(
       `/workspaces/${workspaceId}/boards/${boardId}/columns/${columnId}`,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       }
     );
 
     return new Response(null, { status: 204 });
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao excluir coluna",
-        details: error.response?.data || error.message,
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao excluir coluna",
+      statusMessages: {
+        403: "Você não tem permissão para excluir esta coluna.",
+        404: "Coluna ou board não encontrado.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }

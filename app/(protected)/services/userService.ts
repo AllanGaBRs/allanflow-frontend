@@ -1,13 +1,7 @@
+import { api } from "@/app/api/api";
 import { AuthUser } from "../types/user";
 
 export async function getCurrentUserService(): Promise<AuthUser> {
-  const response = await fetch("/api/auth/me");
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || "Erro ao buscar usuário");
-  }
-
+  const { data } = await api.get<AuthUser>("/auth/me");
   return data;
 }

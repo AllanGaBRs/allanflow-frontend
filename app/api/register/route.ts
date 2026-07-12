@@ -1,7 +1,8 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { apiServer } from "../api-server";
+import { apiServer } from "@/app/api/api-server";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { createdResponse } from "@/app/api/_utils/responses";
 
 export async function POST(req: Request) {
   const { name, email, password } = await req.json();
@@ -13,20 +14,16 @@ export async function POST(req: Request) {
       password,
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        user: res.data,
+    return createdResponse({
+      success: true,
+      user: res.data,
+    });
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro ao criar conta",
+      statusMessages: {
+        409: "Já existe uma conta com este email.",
       },
-      { status: 201 }
-    );
-  } catch (error: any) {
-    return NextResponse.json(
-      {
-        error: "Erro ao criar conta",
-        details: error.response?.data || error.message,
-      },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }

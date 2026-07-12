@@ -2,7 +2,8 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
-import { apiServer } from "../api-server";
+import { apiServer } from "@/app/api/api-server";
+import { backendErrorResponse } from "@/app/api/_utils/errors";
 
 type JwtPayload = {
   sub: string;
@@ -54,15 +55,13 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error: any) {
-    console.error(error.response?.data || error.message);
-
-    return NextResponse.json(
-      {
-        error: "Erro na autenticação",
-        details: error.response?.data || error.message,
+  } catch (error: unknown) {
+    return backendErrorResponse(error, {
+      fallback: "Erro na autenticação",
+      statusMessages: {
+        400: "Email ou senha inválidos.",
+        401: "Email ou senha inválidos.",
       },
-      { status: error.response?.status || 500 }
-    );
+    });
   }
 }

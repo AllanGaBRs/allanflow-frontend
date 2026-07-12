@@ -82,7 +82,7 @@ export function NavBar({
           src="/img/AllanFlow.png"
           alt="AllanFlow"
           className={`pointer-events-none block object-contain transition-all duration-300 ${
-            collapsed ? "w-44 max-w-none" : "w-[350px]"
+            collapsed ? "w-44 max-w-none" : "w-87.5"
           }`}
         />
       </div>

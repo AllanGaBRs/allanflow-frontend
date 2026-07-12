@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   createBoardService,
   deleteBoardService,
@@ -15,7 +15,7 @@ export function useBoards(workspaceId: string) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadBoards() {
+  const loadBoards = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -27,7 +27,7 @@ export function useBoards(workspaceId: string) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [workspaceId]);
 
   async function createBoard(payload: BoardCreatePayload) {
     const trimmedName = payload.name.trim();
@@ -115,7 +115,38 @@ export function useBoards(workspaceId: string) {
   }
 
   useEffect(() => {
-    loadBoards();
+    let active = true;
+
+    async function loadInitialBoards() {
+      await Promise.resolve();
+
+      if (active) {
+        setLoading(true);
+        setError("");
+      }
+
+      try {
+        const data = await getBoardsService(workspaceId);
+
+        if (active) {
+          setBoards(data);
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Erro ao buscar boards");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadInitialBoards();
+
+    return () => {
+      active = false;
+    };
   }, [workspaceId]);
 
   return {
