@@ -6,6 +6,7 @@ import {
   FolderKanban,
   Kanban,
   Settings,
+  Tags,
   Users,
   PanelLeftClose,
   PanelLeftOpen,
@@ -45,6 +46,11 @@ export function NavBar({
       icon: Kanban,
     },
     {
+      label: "Labels",
+      href: workspaceId ? `/workspaces/${workspaceId}/labels` : "/workspaces",
+      icon: Tags,
+    },
+    {
       label: "Configurações",
       href: workspaceId ? `/workspaces/${workspaceId}/settings` : "/settings",
       icon: Settings,
@@ -55,12 +61,13 @@ export function NavBar({
       ? [
           defaultMenuItems[0],
           defaultMenuItems[2],
+          defaultMenuItems[3],
           {
             label: "Membros",
             href: `/workspaces/${workspaceId}/members`,
             icon: Users,
           },
-          defaultMenuItems[3],
+          defaultMenuItems[4],
         ]
       : workspaceId
         ? [defaultMenuItems[0], defaultMenuItems[2]]
