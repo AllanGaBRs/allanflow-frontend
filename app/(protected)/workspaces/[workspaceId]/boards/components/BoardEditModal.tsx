@@ -12,7 +12,6 @@ import {
 import { useColumns } from "../hooks/useColumns";
 import { ColumnDeleteModal } from "./ColumnDeleteModal";
 import { ColumnFormModal } from "./ColumnFormModal";
-import { LabelsManageSection } from "./LabelsManageSection";
 import type { Board, BoardUpdatePayload, Column } from "../types/board";
 
 type BoardEditModalProps = {
@@ -143,8 +142,6 @@ export function BoardEditModal({
               {loading ? "Salvando..." : "Salvar board"}
             </button>
           </form>
-
-          <LabelsManageSection workspaceId={workspaceId} boardId={board.id} />
 
           <div className="mt-8 border-t border-slate-200 pt-5">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

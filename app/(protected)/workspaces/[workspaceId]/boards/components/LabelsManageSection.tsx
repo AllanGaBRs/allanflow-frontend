@@ -31,7 +31,7 @@ export function LabelsManageSection({
   } = useLabels(workspaceId, boardId);
 
   return (
-    <div className="mt-8 border-t border-slate-200 pt-5">
+    <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-base font-semibold text-slate-950">Labels</h3>
