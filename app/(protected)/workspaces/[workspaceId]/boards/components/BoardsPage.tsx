@@ -36,6 +36,8 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     tasksByColumn,
     loading: loadingTasks,
     error: tasksError,
+    moving: movingTask,
+    moveTask,
   } = useTasksByColumn(workspaceId, selectedBoard?.id, columns);
 
   return (
@@ -97,6 +99,8 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
               loading={loadingColumns}
               tasksByColumn={tasksByColumn}
               tasksLoading={loadingTasks}
+              movingTask={movingTask}
+              onMoveTask={moveTask}
             />
           )}
         </div>

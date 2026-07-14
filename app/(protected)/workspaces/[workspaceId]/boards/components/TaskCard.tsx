@@ -1,8 +1,12 @@
 import { Building2, CalendarDays, Flag, UserRound } from "lucide-react";
+import type { DragEvent } from "react";
 import type { Task, TaskPriority } from "../types/task";
 
 type TaskCardProps = {
   task: Task;
+  dragging?: boolean;
+  onDragStart?: (event: DragEvent<HTMLElement>) => void;
+  onDragEnd?: () => void;
 };
 
 const priorityLabels: Record<TaskPriority, string> = {
@@ -28,7 +32,12 @@ function formatDueDate(dueDate: string | null) {
   }).format(new Date(dueDate));
 }
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({
+  task,
+  dragging = false,
+  onDragStart,
+  onDragEnd,
+}: TaskCardProps) {
   const dueDate = formatDueDate(task.dueDate);
   const visibleLabels = task.labels.slice(0, 3);
   const extraLabelsCount = task.labels.length - visibleLabels.length;
@@ -36,7 +45,14 @@ export function TaskCard({ task }: TaskCardProps) {
   const extraAssigneesCount = task.assignees.length - visibleAssignees.length;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow">
+    <article
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={`cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow active:cursor-grabbing ${
+        dragging ? "opacity-50 ring-2 ring-slate-300" : ""
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <h4 className="min-w-0 flex-1 break-words text-sm font-semibold leading-5 text-slate-950">
           {task.title}

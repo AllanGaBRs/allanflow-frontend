@@ -33,3 +33,8 @@ export type Task = {
   assignees: TaskAssignee[];
   client: TaskClient | null;
 };
+
+export type TaskMovePayload = {
+  targetColumnId: string;
+  targetPosition?: number | null;
+};
