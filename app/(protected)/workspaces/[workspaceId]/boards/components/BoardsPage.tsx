@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useBoards } from "../hooks/useBoards";
 import { useColumns } from "../hooks/useColumns";
+import { useTasksByColumn } from "../hooks/useTasksByColumn";
 import { BoardColumnsView } from "./BoardColumnsView";
 import { BoardsEmptyState } from "./BoardsEmptyState";
 import { BoardsToolbar } from "./BoardsToolbar";
@@ -31,6 +32,11 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
   } = useColumns(workspaceId, selectedBoard?.id, {
     initialColumns: selectedBoard?.columns,
   });
+  const {
+    tasksByColumn,
+    loading: loadingTasks,
+    error: tasksError,
+  } = useTasksByColumn(workspaceId, selectedBoard?.id, columns);
 
   return (
     <WorkspaceLayout
@@ -64,6 +70,13 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
             </div>
           )}
 
+          {tasksError && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <AlertCircle size={18} />
+              {tasksError}
+            </div>
+          )}
+
           {loading && (
             <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
               Carregando boards...
@@ -82,6 +95,8 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
               board={selectedBoard}
               columns={columns}
               loading={loadingColumns}
+              tasksByColumn={tasksByColumn}
+              tasksLoading={loadingTasks}
             />
           )}
         </div>
