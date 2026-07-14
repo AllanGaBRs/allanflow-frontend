@@ -38,3 +38,23 @@ export type TaskMovePayload = {
   targetColumnId: string;
   targetPosition?: number | null;
 };
+
+export type TaskUpdatePayload = {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  dueDate: string | null;
+  labels: string[];
+  assignees: string[];
+  client: string | null;
+};
+
+export type TaskForm = {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  dueDate: string;
+  labelIds: string[];
+  assigneeIds: string[];
+  clientId: string;
+};

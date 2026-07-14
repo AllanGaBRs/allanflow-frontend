@@ -5,22 +5,39 @@ import type {
   UpdateMemberRoleRequest,
 } from "../types/member";
 
+type MemberResponse = {
+  membershipId: string;
+  userId: string;
+  name: string;
+  email: string;
+  role: Member["role"];
+};
+
+function normalizeMember(member: MemberResponse): Member {
+  return {
+    userId: member.userId,
+    userName: member.name,
+    userEmail: member.email,
+    role: member.role,
+  };
+}
+
 export async function getMembersService(workspaceId: string): Promise<Member[]> {
-  const { data } = await api.get<Member[]>(
+  const { data } = await api.get<MemberResponse[]>(
     `/workspaces/${workspaceId}/members`
   );
-  return data;
+  return data.map(normalizeMember);
 }
 
 export async function addMemberService(
   workspaceId: string,
   payload: AddMemberRequest
 ): Promise<Member> {
-  const { data } = await api.post<Member>(
+  const { data } = await api.post<MemberResponse>(
     `/workspaces/${workspaceId}/members`,
     payload
   );
-  return data;
+  return normalizeMember(data);
 }
 
 export async function updateMemberRoleService(
@@ -28,11 +45,11 @@ export async function updateMemberRoleService(
   userId: string,
   payload: UpdateMemberRoleRequest
 ): Promise<Member> {
-  const { data } = await api.put<Member>(
+  const { data } = await api.put<MemberResponse>(
     `/workspaces/${workspaceId}/members/${userId}`,
     payload
   );
-  return data;
+  return normalizeMember(data);
 }
 
 export async function removeMemberService(

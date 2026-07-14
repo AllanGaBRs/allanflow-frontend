@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   getColumnTasksService,
+  getTaskService,
   moveTaskService,
+  updateTaskService,
 } from "../services/taskService";
 import type { Column } from "../types/board";
-import type { Task } from "../types/task";
+import type { Task, TaskForm, TaskUpdatePayload } from "../types/task";
 
 export type TasksByColumn = Record<string, Task[]>;
 
@@ -27,6 +29,36 @@ function reindexTasks(tasks: Task[], columnId: string, columnName: string) {
   }));
 }
 
+function toDateTimeLocalValue(dueDate: string | null) {
+  if (!dueDate) {
+    return "";
+  }
+
+  return dueDate.slice(0, 16);
+}
+
+function taskToForm(task: Task): TaskForm {
+  return {
+    title: task.title,
+    description: task.description ?? "",
+    priority: task.priority,
+    dueDate: toDateTimeLocalValue(task.dueDate),
+    labelIds: task.labels.map((label) => label.id),
+    assigneeIds: task.assignees.map((assignee) => assignee.id),
+    clientId: task.client?.id ?? "",
+  };
+}
+
+const initialTaskForm: TaskForm = {
+  title: "",
+  description: "",
+  priority: "MEDIUM",
+  dueDate: "",
+  labelIds: [],
+  assigneeIds: [],
+  clientId: "",
+};
+
 export function useTasksByColumn(
   workspaceId: string,
   boardId: string | undefined,
@@ -35,7 +67,22 @@ export function useTasksByColumn(
   const [tasksByColumn, setTasksByColumn] = useState<TasksByColumn>({});
   const [loading, setLoading] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [loadingTaskDetails, setLoadingTaskDetails] = useState(false);
+  const [savingTask, setSavingTask] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [taskForm, setTaskForm] = useState<TaskForm>(initialTaskForm);
   const [error, setError] = useState("");
+
+  function replaceTaskInColumn(updatedTask: Task) {
+    setTasksByColumn((currentTasksByColumn) => ({
+      ...currentTasksByColumn,
+      [updatedTask.columnId]: sortTasksByPosition(
+        (currentTasksByColumn[updatedTask.columnId] ?? []).map((task) =>
+          task.id === updatedTask.id ? updatedTask : task
+        )
+      ),
+    }));
+  }
 
   const loadTasks = useCallback(async (options: LoadTasksOptions = {}) => {
     if (!boardId || columns.length === 0) {
@@ -143,6 +190,94 @@ export function useTasksByColumn(
     }
   }
 
+  function closeTaskDetails() {
+    setSelectedTask(null);
+    setTaskForm(initialTaskForm);
+    setError("");
+  }
+
+  async function openTaskDetails(task: Task) {
+    if (!boardId) {
+      return;
+    }
+
+    setSelectedTask(task);
+    setTaskForm(taskToForm(task));
+    setLoadingTaskDetails(true);
+    setError("");
+
+    try {
+      const detailedTask = await getTaskService(
+        workspaceId,
+        boardId,
+        task.columnId,
+        task.id
+      );
+      setSelectedTask(detailedTask);
+      setTaskForm(taskToForm(detailedTask));
+      replaceTaskInColumn(detailedTask);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao buscar task");
+    } finally {
+      setLoadingTaskDetails(false);
+    }
+  }
+
+  function updateTaskForm<K extends keyof TaskForm>(
+    field: K,
+    value: TaskForm[K]
+  ) {
+    setTaskForm((currentForm) => ({
+      ...currentForm,
+      [field]: value,
+    }));
+  }
+
+  async function updateSelectedTask() {
+    if (!boardId || !selectedTask) {
+      return false;
+    }
+
+    const trimmedTitle = taskForm.title.trim();
+
+    if (trimmedTitle.length < 2) {
+      setError("O título da task deve ter pelo menos 2 caracteres.");
+      return false;
+    }
+
+    const payload: TaskUpdatePayload = {
+      title: trimmedTitle,
+      description: taskForm.description.trim(),
+      priority: taskForm.priority,
+      dueDate: taskForm.dueDate || null,
+      labels: taskForm.labelIds,
+      assignees: taskForm.assigneeIds,
+      client: taskForm.clientId || null,
+    };
+
+    setSavingTask(true);
+    setError("");
+
+    try {
+      const updatedTask = await updateTaskService(
+        workspaceId,
+        boardId,
+        selectedTask.columnId,
+        selectedTask.id,
+        payload
+      );
+      setSelectedTask(updatedTask);
+      setTaskForm(taskToForm(updatedTask));
+      replaceTaskInColumn(updatedTask);
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao atualizar task");
+      return false;
+    } finally {
+      setSavingTask(false);
+    }
+  }
+
   useEffect(() => {
     let active = true;
 
@@ -199,8 +334,16 @@ export function useTasksByColumn(
     tasksByColumn,
     loading,
     moving,
+    loadingTaskDetails,
+    savingTask,
+    selectedTask,
+    taskForm,
     error,
     loadTasks,
     moveTask,
+    openTaskDetails,
+    closeTaskDetails,
+    updateTaskForm,
+    updateSelectedTask,
   };
 }

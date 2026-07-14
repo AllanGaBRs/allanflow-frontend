@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { DragEvent } from "react";
 import type { Board, Column } from "../types/board";
 import type { TasksByColumn } from "../hooks/useTasksByColumn";
+import type { Task } from "../types/task";
 import { BoardsEmptyState } from "./BoardsEmptyState";
 import { TaskCard } from "./TaskCard";
 
@@ -20,6 +21,7 @@ type BoardColumnsViewProps = {
     targetColumnId: string,
     targetPosition?: number
   ) => Promise<boolean>;
+  onOpenTask: (task: Task) => void;
 };
 
 type DraggedTask = {
@@ -35,10 +37,18 @@ export function BoardColumnsView({
   tasksLoading,
   movingTask,
   onMoveTask,
+  onOpenTask,
 }: BoardColumnsViewProps) {
   const [draggedTask, setDraggedTask] = useState<DraggedTask | null>(null);
   const [dragOverColumnId, setDragOverColumnId] = useState("");
   const dropLocked = useRef(false);
+  const openLocked = useRef(false);
+
+  function unlockOpenAfterDrag() {
+    window.setTimeout(() => {
+      openLocked.current = false;
+    }, 0);
+  }
 
   function handleDragStart(
     event: DragEvent<HTMLElement>,
@@ -56,6 +66,7 @@ export function BoardColumnsView({
       JSON.stringify({ taskId, sourceColumnId })
     );
     setDraggedTask({ taskId, sourceColumnId });
+    openLocked.current = true;
   }
 
   function handleDragOver(
@@ -89,6 +100,7 @@ export function BoardColumnsView({
     ) {
       setDraggedTask(null);
       setDragOverColumnId("");
+      unlockOpenAfterDrag();
       return;
     }
 
@@ -105,12 +117,14 @@ export function BoardColumnsView({
       dropLocked.current = false;
       setDraggedTask(null);
       setDragOverColumnId("");
+      unlockOpenAfterDrag();
     }
   }
 
   function handleDragEnd() {
     setDraggedTask(null);
     setDragOverColumnId("");
+    unlockOpenAfterDrag();
   }
 
   const dragDisabled = tasksLoading || movingTask;
@@ -209,6 +223,11 @@ export function BoardColumnsView({
                           <TaskCard
                             task={task}
                             dragging={draggedTask?.taskId === task.id}
+                            onOpen={() => {
+                              if (!openLocked.current) {
+                                onOpenTask(task);
+                              }
+                            }}
                             onDragStart={(event) => {
                               if (dragDisabled) {
                                 event.preventDefault();

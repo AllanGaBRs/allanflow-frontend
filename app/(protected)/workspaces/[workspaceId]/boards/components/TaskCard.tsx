@@ -5,6 +5,7 @@ import type { Task, TaskPriority } from "../types/task";
 type TaskCardProps = {
   task: Task;
   dragging?: boolean;
+  onOpen?: () => void;
   onDragStart?: (event: DragEvent<HTMLElement>) => void;
   onDragEnd?: () => void;
 };
@@ -35,6 +36,7 @@ function formatDueDate(dueDate: string | null) {
 export function TaskCard({
   task,
   dragging = false,
+  onOpen,
   onDragStart,
   onDragEnd,
 }: TaskCardProps) {
@@ -47,8 +49,17 @@ export function TaskCard({
   return (
     <article
       draggable
+      onClick={onOpen}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen?.();
+        }
+      }}
       className={`cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow active:cursor-grabbing ${
         dragging ? "opacity-50 ring-2 ring-slate-300" : ""
       }`}

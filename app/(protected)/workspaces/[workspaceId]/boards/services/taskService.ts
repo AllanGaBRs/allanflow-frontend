@@ -1,5 +1,5 @@
 import { api } from "@/app/api/api";
-import type { Task, TaskMovePayload } from "../types/task";
+import type { Task, TaskMovePayload, TaskUpdatePayload } from "../types/task";
 
 function columnTasksUrl(
   workspaceId: string,
@@ -30,6 +30,34 @@ export async function moveTaskService(
 ): Promise<Task> {
   const { data } = await api.patch<Task>(
     `${columnTasksUrl(workspaceId, boardId, sourceColumnId)}/${taskId}/move`,
+    payload
+  );
+
+  return data;
+}
+
+export async function getTaskService(
+  workspaceId: string,
+  boardId: string,
+  columnId: string,
+  taskId: string
+): Promise<Task> {
+  const { data } = await api.get<Task>(
+    `${columnTasksUrl(workspaceId, boardId, columnId)}/${taskId}`
+  );
+
+  return data;
+}
+
+export async function updateTaskService(
+  workspaceId: string,
+  boardId: string,
+  columnId: string,
+  taskId: string,
+  payload: TaskUpdatePayload
+): Promise<Task> {
+  const { data } = await api.put<Task>(
+    `${columnTasksUrl(workspaceId, boardId, columnId)}/${taskId}`,
     payload
   );
 
