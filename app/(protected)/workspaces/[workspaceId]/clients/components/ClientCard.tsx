@@ -1,11 +1,19 @@
-import { Building2, Mail, Phone } from "lucide-react";
+import { Building2, Mail, Pencil, Phone, Trash2 } from "lucide-react";
 import type { Client } from "../types/client";
 
 type ClientCardProps = {
   client: Client;
+  disabled: boolean;
+  onEdit: (client: Client) => void;
+  onDelete: (client: Client) => void;
 };
 
-export function ClientCard({ client }: ClientCardProps) {
+export function ClientCard({
+  client,
+  disabled,
+  onEdit,
+  onDelete,
+}: ClientCardProps) {
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -40,6 +48,27 @@ export function ClientCard({ client }: ClientCardProps) {
             <span className="truncate">{client.phone}</span>
           </a>
         )}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-4">
+        <button
+          type="button"
+          onClick={() => onEdit(client)}
+          disabled={disabled}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Pencil size={16} />
+          Editar
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(client)}
+          disabled={disabled}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-red-200 px-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Trash2 size={16} />
+          Excluir
+        </button>
       </div>
     </article>
   );

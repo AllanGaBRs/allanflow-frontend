@@ -10,6 +10,7 @@ type ClientFormProps = {
     value: ClientCreatePayload[K]
   ) => void;
   onSubmit: () => Promise<boolean>;
+  submitLabel?: string;
 };
 
 export function ClientForm({
@@ -17,6 +18,7 @@ export function ClientForm({
   loading,
   onChange,
   onSubmit,
+  submitLabel = "Criar cliente",
 }: ClientFormProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -106,7 +108,7 @@ export function ClientForm({
         disabled={loading}
         className="mt-2 inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? "Salvando..." : "Criar cliente"}
+        {loading ? "Salvando..." : submitLabel}
       </button>
     </form>
   );

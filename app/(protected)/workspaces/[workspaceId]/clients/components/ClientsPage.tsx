@@ -5,8 +5,10 @@ import { BriefcaseBusiness, Plus, X } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useClients } from "../hooks/useClients";
 import { ClientCard } from "./ClientCard";
+import { ClientDeleteModal } from "./ClientDeleteModal";
 import { ClientForm } from "./ClientForm";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
+import type { Client } from "../types/client";
 
 type ClientsPageProps = {
   workspaceId: string;
@@ -15,6 +17,8 @@ type ClientsPageProps = {
 
 export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const {
     clients,
     form,
@@ -23,7 +27,10 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
     error,
     updateForm,
     resetForm,
+    loadClientForEdit,
     createClient,
+    updateClient,
+    deleteClient,
   } = useClients(workspaceId);
 
   const closeCreateModal = useCallback(() => {
@@ -35,6 +42,27 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
     setIsCreateModalOpen(false);
   }, [resetForm, saving]);
 
+  const closeEditModal = useCallback(() => {
+    if (saving) return;
+    resetForm();
+    setEditingClient(null);
+  }, [resetForm, saving]);
+
+  const closeDeleteModal = useCallback(() => {
+    if (saving) return;
+    setDeletingClient(null);
+  }, [saving]);
+
+  function openCreateModal() {
+    resetForm();
+    setIsCreateModalOpen(true);
+  }
+
+  async function openEditModal(client: Client) {
+    const freshClient = await loadClientForEdit(client.id);
+    if (freshClient) setEditingClient(freshClient);
+  }
+
   async function handleCreateClient() {
     const created = await createClient();
 
@@ -45,21 +73,37 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
     return created;
   }
 
+  async function handleUpdateClient() {
+    if (!editingClient) return false;
+    const updated = await updateClient(editingClient.id);
+    if (updated) setEditingClient(null);
+    return updated;
+  }
+
   useEffect(() => {
-    if (!isCreateModalOpen) {
+    if (!isCreateModalOpen && !editingClient && !deletingClient) {
       return;
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        closeCreateModal();
+        if (isCreateModalOpen) closeCreateModal();
+        if (editingClient) closeEditModal();
+        if (deletingClient) closeDeleteModal();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeCreateModal, isCreateModalOpen]);
+  }, [
+    closeCreateModal,
+    closeDeleteModal,
+    closeEditModal,
+    deletingClient,
+    editingClient,
+    isCreateModalOpen,
+  ]);
 
   return (
     <WorkspaceLayout
@@ -86,7 +130,7 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
 
             <button
               type="button"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={openCreateModal}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <Plus size={18} />
@@ -127,7 +171,13 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
           {!loading && clients.length > 0 && (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {clients.map((client) => (
-                <ClientCard key={client.id} client={client} />
+                <ClientCard
+                  key={client.id}
+                  client={client}
+                  disabled={saving}
+                  onEdit={openEditModal}
+                  onDelete={setDeletingClient}
+                />
               ))}
             </div>
           )}
@@ -178,6 +228,57 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
             />
           </div>
         </div>
+      )}
+
+      {editingClient && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-client-title"
+          onClick={closeEditModal}
+        >
+          <div
+            className="w-full max-w-lg rounded-lg border border-slate-200 bg-white p-5 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 id="edit-client-title" className="text-lg font-semibold text-slate-950">
+                  Editar cliente
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Atualize os dados principais do cliente.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeEditModal}
+                disabled={saving}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Fechar modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <ClientForm
+              form={form}
+              loading={saving}
+              onChange={updateForm}
+              onSubmit={handleUpdateClient}
+              submitLabel="Salvar alterações"
+            />
+          </div>
+        </div>
+      )}
+
+      {deletingClient && (
+        <ClientDeleteModal
+          client={deletingClient}
+          loading={saving}
+          onClose={closeDeleteModal}
+          onConfirm={() => deleteClient(deletingClient.id)}
+        />
       )}
     </WorkspaceLayout>
   );

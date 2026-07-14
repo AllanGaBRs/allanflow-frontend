@@ -12,3 +12,5 @@ export type ClientCreatePayload = {
   phone: string;
   company: string;
 };
+
+export type ClientUpdatePayload = ClientCreatePayload;

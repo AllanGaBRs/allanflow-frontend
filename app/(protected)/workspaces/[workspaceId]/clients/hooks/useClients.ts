@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   createClientService,
+  deleteClientService,
+  getClientService,
   getClientsService,
+  updateClientService,
 } from "../services/clientService";
 import type { Client, ClientCreatePayload } from "../types/client";
 
@@ -77,6 +80,33 @@ export function useClients(workspaceId: string) {
 
   function resetForm() {
     setForm(initialForm);
+    setError("");
+  }
+
+  function fillForm(client: Client) {
+    setForm({
+      name: client.name,
+      email: client.email,
+      phone: client.phone ?? "",
+      company: client.company ?? "",
+    });
+    setError("");
+  }
+
+  async function loadClientForEdit(clientId: string) {
+    setSaving(true);
+    setError("");
+
+    try {
+      const client = await getClientService(workspaceId, clientId);
+      fillForm(client);
+      return client;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao buscar cliente");
+      return null;
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function createClient() {
@@ -97,6 +127,56 @@ export function useClients(workspaceId: string) {
       return true;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao criar cliente");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function updateClient(clientId: string) {
+    const { error: validationError, payload } = validateClientForm(form);
+
+    if (!payload) {
+      setError(validationError);
+      return false;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const updatedClient = await updateClientService(
+        workspaceId,
+        clientId,
+        payload
+      );
+      setClients((currentClients) =>
+        currentClients.map((client) =>
+          client.id === clientId ? updatedClient : client
+        )
+      );
+      resetForm();
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao atualizar cliente");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteClient(clientId: string) {
+    setSaving(true);
+    setError("");
+
+    try {
+      await deleteClientService(workspaceId, clientId);
+      setClients((currentClients) =>
+        currentClients.filter((client) => client.id !== clientId)
+      );
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir cliente");
       return false;
     } finally {
       setSaving(false);
@@ -146,7 +226,10 @@ export function useClients(workspaceId: string) {
     error,
     updateForm,
     resetForm,
+    loadClientForEdit,
     createClient,
+    updateClient,
+    deleteClient,
     loadClients,
   };
 }
