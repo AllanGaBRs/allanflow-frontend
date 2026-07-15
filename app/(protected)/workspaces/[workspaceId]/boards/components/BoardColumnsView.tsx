@@ -31,6 +31,11 @@ type DraggedTask = {
   sourceColumnId: string;
 };
 
+type DragOverTarget = {
+  columnId: string;
+  position: number;
+};
+
 export function BoardColumnsView({
   board,
   columns,
@@ -43,7 +48,8 @@ export function BoardColumnsView({
   onCreateTask,
 }: BoardColumnsViewProps) {
   const [draggedTask, setDraggedTask] = useState<DraggedTask | null>(null);
-  const [dragOverColumnId, setDragOverColumnId] = useState("");
+  const [dragOverTarget, setDragOverTarget] =
+    useState<DragOverTarget | null>(null);
   const dropLocked = useRef(false);
   const openLocked = useRef(false);
 
@@ -74,17 +80,18 @@ export function BoardColumnsView({
 
   function handleDragOver(
     event: DragEvent<HTMLElement>,
-    targetColumnId: string
+    targetColumnId: string,
+    targetPosition: number
   ) {
     event.stopPropagation();
 
-    if (!draggedTask || draggedTask.sourceColumnId === targetColumnId) {
+    if (!draggedTask) {
       return;
     }
 
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    setDragOverColumnId(targetColumnId);
+    setDragOverTarget({ columnId: targetColumnId, position: targetPosition });
   }
 
   async function handleDrop(
@@ -98,11 +105,10 @@ export function BoardColumnsView({
     if (
       dropLocked.current ||
       movingTask ||
-      !draggedTask ||
-      draggedTask.sourceColumnId === targetColumnId
+      !draggedTask
     ) {
       setDraggedTask(null);
-      setDragOverColumnId("");
+      setDragOverTarget(null);
       unlockOpenAfterDrag();
       return;
     }
@@ -119,15 +125,56 @@ export function BoardColumnsView({
     } finally {
       dropLocked.current = false;
       setDraggedTask(null);
-      setDragOverColumnId("");
+      setDragOverTarget(null);
       unlockOpenAfterDrag();
     }
   }
 
   function handleDragEnd() {
     setDraggedTask(null);
-    setDragOverColumnId("");
+    setDragOverTarget(null);
     unlockOpenAfterDrag();
+  }
+
+  function getDropPosition(tasks: Task[], taskIndex: number, placeAfter: boolean) {
+    const tasksBeforeDrop = tasks.slice(0, placeAfter ? taskIndex + 1 : taskIndex);
+
+    return tasksBeforeDrop.filter((task) => task.id !== draggedTask?.taskId)
+      .length;
+  }
+
+  function getFinalDropPosition(tasks: Task[]) {
+    return tasks.filter((task) => task.id !== draggedTask?.taskId).length;
+  }
+
+  function isActiveDropTarget(columnId: string, position: number) {
+    return (
+      dragOverTarget?.columnId === columnId &&
+      dragOverTarget.position === position
+    );
+  }
+
+  function renderDropIndicator(columnId: string, position: number) {
+    const active = isActiveDropTarget(columnId, position);
+
+    return (
+      <div
+        onDragOver={(event) => handleDragOver(event, columnId, position)}
+        onDrop={(event) => void handleDrop(event, columnId, position)}
+        className={`transition-all duration-150 ${
+          draggedTask ? "h-3" : "h-0"
+        } ${active ? "h-8" : ""}`}
+        aria-hidden="true"
+      >
+        <div
+          className={`h-full rounded-lg border-2 border-dashed transition ${
+            active
+              ? "border-blue-300 bg-blue-50"
+              : "border-transparent bg-transparent"
+          }`}
+        />
+      </div>
+    );
   }
 
   const dragDisabled = tasksLoading || movingTask;
@@ -164,15 +211,17 @@ export function BoardColumnsView({
           <div className="flex min-h-full w-max gap-4 pr-4">
             {columns.map((column) => {
               const tasks = tasksByColumn[column.id] ?? [];
-              const isDragOver = dragOverColumnId === column.id;
+              const finalDropPosition = getFinalDropPosition(tasks);
+              const isDragOver = dragOverTarget?.columnId === column.id;
 
               return (
                 <article
                   key={column.id}
-                  onDragOver={(event) => handleDragOver(event, column.id)}
-                  onDragLeave={() => setDragOverColumnId("")}
+                  onDragOver={(event) =>
+                    handleDragOver(event, column.id, finalDropPosition)
+                  }
                   onDrop={(event) =>
-                    void handleDrop(event, column.id, tasks.length)
+                    void handleDrop(event, column.id, finalDropPosition)
                   }
                   className={`flex min-h-[calc(100vh-15rem)] w-[320px] shrink-0 flex-col rounded-lg border p-4 transition ${
                     isDragOver
@@ -213,7 +262,7 @@ export function BoardColumnsView({
 
                   {!tasksLoading && tasks.length === 0 && (
                     <div
-                      onDragOver={(event) => handleDragOver(event, column.id)}
+                      onDragOver={(event) => handleDragOver(event, column.id, 0)}
                       onDrop={(event) => void handleDrop(event, column.id, 0)}
                       className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500"
                     >
@@ -222,37 +271,86 @@ export function BoardColumnsView({
                   )}
 
                   {!tasksLoading && tasks.length > 0 && (
-                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-                      {tasks.map((task, index) => (
-                        <div
-                          key={task.id}
-                          onDragOver={(event) =>
-                            handleDragOver(event, column.id)
-                          }
-                          onDrop={(event) =>
-                            void handleDrop(event, column.id, index)
-                          }
-                        >
-                          <TaskCard
-                            task={task}
-                            dragging={draggedTask?.taskId === task.id}
-                            onOpen={() => {
-                              if (!openLocked.current) {
-                                onOpenTask(task);
-                              }
-                            }}
-                            onDragStart={(event) => {
-                              if (dragDisabled) {
-                                event.preventDefault();
-                                return;
-                              }
+                    <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                      {tasks.map((task, index) => {
+                        const dropBeforePosition = getDropPosition(
+                          tasks,
+                          index,
+                          false
+                        );
+                        const dropAfterPosition = getDropPosition(
+                          tasks,
+                          index,
+                          true
+                        );
 
-                              handleDragStart(event, task.id, column.id);
-                            }}
-                            onDragEnd={handleDragEnd}
-                          />
-                        </div>
-                      ))}
+                        return (
+                          <div key={task.id}>
+                            {draggedTask?.taskId !== task.id &&
+                              renderDropIndicator(
+                                column.id,
+                                dropBeforePosition
+                              )}
+
+                            <div
+                              onDragOver={(event) => {
+                                if (draggedTask?.taskId === task.id) {
+                                  event.stopPropagation();
+                                  return;
+                                }
+
+                                const rect =
+                                  event.currentTarget.getBoundingClientRect();
+                                const placeAfter =
+                                  event.clientY > rect.top + rect.height / 2;
+                                const nextPosition = placeAfter
+                                  ? dropAfterPosition
+                                  : dropBeforePosition;
+
+                                handleDragOver(
+                                  event,
+                                  column.id,
+                                  nextPosition
+                                );
+                              }}
+                              onDrop={(event) => {
+                                const nextPosition =
+                                  dragOverTarget?.columnId === column.id
+                                    ? dragOverTarget.position
+                                    : dropBeforePosition;
+
+                                void handleDrop(
+                                  event,
+                                  column.id,
+                                  nextPosition
+                                );
+                              }}
+                              className="py-1.5"
+                            >
+                              <TaskCard
+                                task={task}
+                                dragging={draggedTask?.taskId === task.id}
+                                onOpen={() => {
+                                  if (!openLocked.current) {
+                                    onOpenTask(task);
+                                  }
+                                }}
+                                onDragStart={(event) => {
+                                  if (dragDisabled) {
+                                    event.preventDefault();
+                                    return;
+                                  }
+
+                                  handleDragStart(event, task.id, column.id);
+                                }}
+                                onDragEnd={handleDragEnd}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {renderDropIndicator(column.id, finalDropPosition)}
                     </div>
                   )}
                 </article>

@@ -135,7 +135,7 @@ export function useTasksByColumn(
     targetColumnId: string,
     targetPosition?: number
   ) {
-    if (!boardId || sourceColumnId === targetColumnId) {
+    if (!boardId) {
       return false;
     }
 
@@ -155,12 +155,19 @@ export function useTasksByColumn(
       return false;
     }
 
+    const sameColumn = sourceColumnId === targetColumnId;
+    const tasksAvailableForTarget = sameColumn
+      ? sourceTasks.filter((item) => item.id !== taskId)
+      : targetTasks;
     const nextPosition = Math.max(
       0,
-      Math.min(targetPosition ?? targetTasks.length, targetTasks.length)
+      Math.min(
+        targetPosition ?? tasksAvailableForTarget.length,
+        tasksAvailableForTarget.length
+      )
     );
     const nextSourceTasks = sourceTasks.filter((item) => item.id !== taskId);
-    const nextTargetTasks = [...targetTasks];
+    const nextTargetTasks = sameColumn ? [...nextSourceTasks] : [...targetTasks];
     nextTargetTasks.splice(nextPosition, 0, {
       ...task,
       columnId: targetColumnId,
@@ -170,11 +177,15 @@ export function useTasksByColumn(
     setError("");
     setTasksByColumn({
       ...previousTasksByColumn,
-      [sourceColumnId]: reindexTasks(
-        nextSourceTasks,
-        sourceColumnId,
-        sourceColumn.name
-      ),
+      ...(sameColumn
+        ? {}
+        : {
+            [sourceColumnId]: reindexTasks(
+              nextSourceTasks,
+              sourceColumnId,
+              sourceColumn.name
+            ),
+          }),
       [targetColumnId]: reindexTasks(
         nextTargetTasks,
         targetColumnId,

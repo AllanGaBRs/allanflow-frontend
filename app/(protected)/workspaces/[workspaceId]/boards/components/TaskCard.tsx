@@ -65,7 +65,7 @@ export function TaskCard({
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <h4 className="min-w-0 flex-1 break-words text-sm font-semibold leading-5 text-slate-950">
+        <h4 className="min-w-0 flex-1 wrap-break-word text-sm font-semibold leading-5 text-slate-950">
           {task.title}
         </h4>
 
@@ -78,7 +78,7 @@ export function TaskCard({
       </div>
 
       {task.description && (
-        <p className="mt-2 line-clamp-3 break-words text-xs leading-5 text-slate-500">
+        <p className="mt-2 line-clamp-3 wrap-break-word text-xs leading-5 text-slate-500">
           {task.description}
         </p>
       )}
