@@ -1,23 +1,27 @@
 "use client";
 
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, Trash2, X } from "lucide-react";
 import type { Client } from "../../clients/types/client";
 import type { Member } from "../../members/types/member";
 import type { Label } from "../types/label";
 import type { Task, TaskForm, TaskPriority } from "../types/task";
 
 type TaskDetailsModalProps = {
-  task: Task;
+  task?: Task;
+  columnName: string;
+  mode?: "create" | "edit";
   form: TaskForm;
   labels: Label[];
   clients: Client[];
   members: Member[];
   loading: boolean;
   saving: boolean;
+  deleting?: boolean;
   error: string;
   onClose: () => void;
   onChange: <K extends keyof TaskForm>(field: K, value: TaskForm[K]) => void;
   onSubmit: () => Promise<boolean>;
+  onDeleteRequest?: () => void;
 };
 
 const priorities: Array<{ value: TaskPriority; label: string }> = [
@@ -34,18 +38,23 @@ function toggleId(ids: string[], id: string) {
 
 export function TaskDetailsModal({
   task,
+  columnName,
+  mode = "edit",
   form,
   labels,
   clients,
   members,
   loading,
   saving,
+  deleting = false,
   error,
   onClose,
   onChange,
   onSubmit,
+  onDeleteRequest,
 }: TaskDetailsModalProps) {
-  const busy = loading || saving;
+  const busy = loading || saving || deleting;
+  const isCreating = mode === "create";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,13 +76,13 @@ export function TaskDetailsModal({
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {task.columnName}
+              {columnName}
             </p>
             <h2
               id="task-details-title"
               className="mt-1 break-words text-lg font-semibold text-slate-950"
             >
-              {task.title}
+              {isCreating ? "Nova tarefa" : task?.title}
             </h2>
           </div>
 
@@ -281,13 +290,32 @@ export function TaskDetailsModal({
             </div>
           </div>
 
-          <div className="mt-5 flex justify-end border-t border-slate-200 pt-4">
+          <div className={`mt-5 flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row ${
+            isCreating ? "sm:justify-end" : "sm:justify-between"
+          }`}>
+            {!isCreating && (
+              <button
+                type="button"
+                onClick={onDeleteRequest}
+                disabled={busy}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-red-200 px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Trash2 size={16} />
+                Excluir tarefa
+              </button>
+            )}
             <button
               type="submit"
               disabled={busy}
               className="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? "Salvando..." : "Salvar alterações"}
+              {saving
+                ? isCreating
+                  ? "Criando..."
+                  : "Salvando..."
+                : isCreating
+                  ? "Criar tarefa"
+                  : "Salvar alterações"}
             </button>
           </div>
         </form>

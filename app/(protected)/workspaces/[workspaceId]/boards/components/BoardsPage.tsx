@@ -13,6 +13,7 @@ import { BoardColumnsView } from "./BoardColumnsView";
 import { BoardsEmptyState } from "./BoardsEmptyState";
 import { BoardsToolbar } from "./BoardsToolbar";
 import { TaskDetailsModal } from "./TaskDetailsModal";
+import { TaskDeleteModal } from "./TaskDeleteModal";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
 
 type BoardsPageProps = {
@@ -23,6 +24,7 @@ type BoardsPageProps = {
 export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
   const { boards, loading, error } = useBoards(workspaceId);
   const [selectedBoardId, setSelectedBoardId] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const canManageBoards =
     initialWorkspace.userRole === "OWNER" || initialWorkspace.userRole === "ADMIN";
   const selectedBoard = useMemo(
@@ -58,13 +60,19 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     moving: movingTask,
     loadingTaskDetails,
     savingTask,
+    deletingTask,
     selectedTask,
+    createColumnId,
     taskForm,
     moveTask,
     openTaskDetails,
+    openTaskCreate,
     closeTaskDetails,
+    closeTaskCreate,
     updateTaskForm,
     updateSelectedTask,
+    deleteSelectedTask,
+    createTask,
   } = useTasksByColumn(workspaceId, selectedBoard?.id, columns);
   const taskDetailsLoading =
     loadingTaskDetails || loadingLabels || loadingClients || loadingMembers;
@@ -140,6 +148,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
               movingTask={movingTask}
               onMoveTask={moveTask}
               onOpenTask={(task) => void openTaskDetails(task)}
+              onCreateTask={openTaskCreate}
             />
           )}
         </div>
@@ -148,6 +157,39 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
       {selectedTask && (
         <TaskDetailsModal
           task={selectedTask}
+          columnName={selectedTask.columnName}
+          form={taskForm}
+          labels={labels}
+          clients={clients}
+          members={members}
+          loading={taskDetailsLoading}
+          saving={savingTask}
+          deleting={deletingTask}
+          error={taskDetailsError}
+          onClose={closeTaskDetails}
+          onChange={updateTaskForm}
+          onSubmit={updateSelectedTask}
+          onDeleteRequest={() => setDeleteModalOpen(true)}
+        />
+      )}
+
+      {selectedTask && deleteModalOpen && (
+        <TaskDeleteModal
+          task={selectedTask}
+          loading={deletingTask}
+          error={tasksError}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={deleteSelectedTask}
+        />
+      )}
+
+      {createColumnId && (
+        <TaskDetailsModal
+          columnName={
+            columns.find((column) => column.id === createColumnId)?.name ??
+            "Coluna"
+          }
+          mode="create"
           form={taskForm}
           labels={labels}
           clients={clients}
@@ -155,9 +197,9 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
           loading={taskDetailsLoading}
           saving={savingTask}
           error={taskDetailsError}
-          onClose={closeTaskDetails}
+          onClose={closeTaskCreate}
           onChange={updateTaskForm}
-          onSubmit={updateSelectedTask}
+          onSubmit={createTask}
         />
       )}
     </WorkspaceLayout>

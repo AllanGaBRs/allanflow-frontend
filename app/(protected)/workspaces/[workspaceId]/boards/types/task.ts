@@ -39,7 +39,7 @@ export type TaskMovePayload = {
   targetPosition?: number | null;
 };
 
-export type TaskUpdatePayload = {
+export type TaskCreatePayload = {
   title: string;
   description: string;
   priority: TaskPriority;
@@ -48,6 +48,8 @@ export type TaskUpdatePayload = {
   assignees: string[];
   client: string | null;
 };
+
+export type TaskUpdatePayload = TaskCreatePayload;
 
 export type TaskForm = {
   title: string;

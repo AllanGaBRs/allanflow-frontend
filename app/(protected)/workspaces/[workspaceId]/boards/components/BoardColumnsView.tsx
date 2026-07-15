@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import type { DragEvent } from "react";
 import type { Board, Column } from "../types/board";
 import type { TasksByColumn } from "../hooks/useTasksByColumn";
@@ -22,6 +23,7 @@ type BoardColumnsViewProps = {
     targetPosition?: number
   ) => Promise<boolean>;
   onOpenTask: (task: Task) => void;
+  onCreateTask: (columnId: string) => void;
 };
 
 type DraggedTask = {
@@ -38,6 +40,7 @@ export function BoardColumnsView({
   movingTask,
   onMoveTask,
   onOpenTask,
+  onCreateTask,
 }: BoardColumnsViewProps) {
   const [draggedTask, setDraggedTask] = useState<DraggedTask | null>(null);
   const [dragOverColumnId, setDragOverColumnId] = useState("");
@@ -191,6 +194,16 @@ export function BoardColumnsView({
                       {tasks.length}
                     </span>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onCreateTask(column.id)}
+                    disabled={tasksLoading || movingTask}
+                    className="mb-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Plus size={16} />
+                    Adicionar tarefa
+                  </button>
 
                   {tasksLoading && (
                     <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">

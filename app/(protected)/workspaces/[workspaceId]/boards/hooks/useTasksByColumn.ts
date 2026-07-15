@@ -2,13 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  createTaskService,
+  deleteTaskService,
   getColumnTasksService,
   getTaskService,
   moveTaskService,
   updateTaskService,
 } from "../services/taskService";
 import type { Column } from "../types/board";
-import type { Task, TaskForm, TaskUpdatePayload } from "../types/task";
+import type {
+  Task,
+  TaskCreatePayload,
+  TaskForm,
+  TaskUpdatePayload,
+} from "../types/task";
 
 export type TasksByColumn = Record<string, Task[]>;
 
@@ -69,6 +76,8 @@ export function useTasksByColumn(
   const [moving, setMoving] = useState(false);
   const [loadingTaskDetails, setLoadingTaskDetails] = useState(false);
   const [savingTask, setSavingTask] = useState(false);
+  const [deletingTask, setDeletingTask] = useState(false);
+  const [createColumnId, setCreateColumnId] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [taskForm, setTaskForm] = useState<TaskForm>(initialTaskForm);
   const [error, setError] = useState("");
@@ -196,6 +205,19 @@ export function useTasksByColumn(
     setError("");
   }
 
+  function openTaskCreate(columnId: string) {
+    setSelectedTask(null);
+    setCreateColumnId(columnId);
+    setTaskForm(initialTaskForm);
+    setError("");
+  }
+
+  function closeTaskCreate() {
+    setCreateColumnId("");
+    setTaskForm(initialTaskForm);
+    setError("");
+  }
+
   async function openTaskDetails(task: Task) {
     if (!boardId) {
       return;
@@ -233,6 +255,57 @@ export function useTasksByColumn(
     }));
   }
 
+  function taskPayloadFromForm(): TaskCreatePayload {
+    return {
+      title: taskForm.title.trim(),
+      description: taskForm.description.trim(),
+      priority: taskForm.priority,
+      dueDate: taskForm.dueDate || null,
+      labels: taskForm.labelIds,
+      assignees: taskForm.assigneeIds,
+      client: taskForm.clientId || null,
+    };
+  }
+
+  async function createTask() {
+    if (!boardId || !createColumnId) {
+      return false;
+    }
+
+    const payload = taskPayloadFromForm();
+
+    if (payload.title.length < 2) {
+      setError("O título da task deve ter pelo menos 2 caracteres.");
+      return false;
+    }
+
+    setSavingTask(true);
+    setError("");
+
+    try {
+      const createdTask = await createTaskService(
+        workspaceId,
+        boardId,
+        createColumnId,
+        payload
+      );
+      setTasksByColumn((currentTasksByColumn) => ({
+        ...currentTasksByColumn,
+        [createColumnId]: sortTasksByPosition([
+          ...(currentTasksByColumn[createColumnId] ?? []),
+          createdTask,
+        ]),
+      }));
+      closeTaskCreate();
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao criar task");
+      return false;
+    } finally {
+      setSavingTask(false);
+    }
+  }
+
   async function updateSelectedTask() {
     if (!boardId || !selectedTask) {
       return false;
@@ -245,15 +318,7 @@ export function useTasksByColumn(
       return false;
     }
 
-    const payload: TaskUpdatePayload = {
-      title: trimmedTitle,
-      description: taskForm.description.trim(),
-      priority: taskForm.priority,
-      dueDate: taskForm.dueDate || null,
-      labels: taskForm.labelIds,
-      assignees: taskForm.assigneeIds,
-      client: taskForm.clientId || null,
-    };
+    const payload: TaskUpdatePayload = taskPayloadFromForm();
 
     setSavingTask(true);
     setError("");
@@ -275,6 +340,38 @@ export function useTasksByColumn(
       return false;
     } finally {
       setSavingTask(false);
+    }
+  }
+
+  async function deleteSelectedTask() {
+    if (!boardId || !selectedTask) {
+      return false;
+    }
+
+    const taskToDelete = selectedTask;
+    setDeletingTask(true);
+    setError("");
+
+    try {
+      await deleteTaskService(
+        workspaceId,
+        boardId,
+        taskToDelete.columnId,
+        taskToDelete.id
+      );
+      setTasksByColumn((currentTasksByColumn) => ({
+        ...currentTasksByColumn,
+        [taskToDelete.columnId]: (
+          currentTasksByColumn[taskToDelete.columnId] ?? []
+        ).filter((task) => task.id !== taskToDelete.id),
+      }));
+      closeTaskDetails();
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir task");
+      return false;
+    } finally {
+      setDeletingTask(false);
     }
   }
 
@@ -336,14 +433,20 @@ export function useTasksByColumn(
     moving,
     loadingTaskDetails,
     savingTask,
+    deletingTask,
     selectedTask,
+    createColumnId,
     taskForm,
     error,
     loadTasks,
     moveTask,
     openTaskDetails,
+    openTaskCreate,
     closeTaskDetails,
+    closeTaskCreate,
     updateTaskForm,
     updateSelectedTask,
+    deleteSelectedTask,
+    createTask,
   };
 }

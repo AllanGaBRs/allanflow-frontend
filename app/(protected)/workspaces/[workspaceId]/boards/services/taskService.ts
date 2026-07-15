@@ -1,5 +1,10 @@
 import { api } from "@/app/api/api";
-import type { Task, TaskMovePayload, TaskUpdatePayload } from "../types/task";
+import type {
+  Task,
+  TaskCreatePayload,
+  TaskMovePayload,
+  TaskUpdatePayload,
+} from "../types/task";
 
 function columnTasksUrl(
   workspaceId: string,
@@ -16,6 +21,20 @@ export async function getColumnTasksService(
 ): Promise<Task[]> {
   const { data } = await api.get<Task[]>(
     columnTasksUrl(workspaceId, boardId, columnId)
+  );
+
+  return data;
+}
+
+export async function createTaskService(
+  workspaceId: string,
+  boardId: string,
+  columnId: string,
+  payload: TaskCreatePayload
+): Promise<Task> {
+  const { data } = await api.post<Task>(
+    columnTasksUrl(workspaceId, boardId, columnId),
+    payload
   );
 
   return data;
@@ -62,4 +81,15 @@ export async function updateTaskService(
   );
 
   return data;
+}
+
+export async function deleteTaskService(
+  workspaceId: string,
+  boardId: string,
+  columnId: string,
+  taskId: string
+): Promise<void> {
+  await api.delete(
+    `${columnTasksUrl(workspaceId, boardId, columnId)}/${taskId}`
+  );
 }
