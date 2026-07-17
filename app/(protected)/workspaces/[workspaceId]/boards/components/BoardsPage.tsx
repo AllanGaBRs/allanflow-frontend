@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
+import { useUser } from "../../../../hooks/useUser";
 import { useClients } from "../../clients/hooks/useClients";
 import { useMembers } from "../../members/hooks/useMembers";
 import { useBoardMembers } from "../hooks/useBoardMembers";
@@ -23,6 +24,7 @@ type BoardsPageProps = {
 };
 
 export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
+  const { user } = useUser();
   const { boards, loading, error } = useBoards(workspaceId);
   const [selectedBoardId, setSelectedBoardId] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -193,11 +195,14 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
       {selectedTask && (
         <TaskDetailsModal
           task={selectedTask}
+          workspaceId={workspaceId}
           columnName={selectedTask.columnName}
           form={taskForm}
           labels={labels}
           clients={clients}
           members={taskAssigneeOptions}
+          currentUserId={user?.id}
+          canManageComments={canManageBoards}
           loading={taskDetailsLoading}
           saving={savingTask}
           deleting={deletingTask}
@@ -221,6 +226,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
 
       {createColumnId && (
         <TaskDetailsModal
+          workspaceId={workspaceId}
           columnName={
             columns.find((column) => column.id === createColumnId)?.name ??
             "Coluna"
@@ -230,6 +236,8 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
           labels={labels}
           clients={clients}
           members={taskAssigneeOptions}
+          currentUserId={user?.id}
+          canManageComments={canManageBoards}
           loading={taskDetailsLoading}
           saving={savingTask}
           error={taskDetailsError}

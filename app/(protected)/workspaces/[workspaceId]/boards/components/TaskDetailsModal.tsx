@@ -3,17 +3,22 @@
 import { AlertCircle, Trash2, X } from "lucide-react";
 import type { Client } from "../../clients/types/client";
 import type { Member } from "../../members/types/member";
+import { useTaskComments } from "../hooks/useTaskComments";
 import type { Label } from "../types/label";
 import type { Task, TaskForm, TaskPriority } from "../types/task";
+import { TaskCommentsSection } from "./TaskCommentsSection";
 
 type TaskDetailsModalProps = {
   task?: Task;
+  workspaceId: string;
   columnName: string;
   mode?: "create" | "edit";
   form: TaskForm;
   labels: Label[];
   clients: Client[];
   members: Member[];
+  currentUserId?: string;
+  canManageComments: boolean;
   loading: boolean;
   saving: boolean;
   deleting?: boolean;
@@ -38,12 +43,15 @@ function toggleId(ids: string[], id: string) {
 
 export function TaskDetailsModal({
   task,
+  workspaceId,
   columnName,
   mode = "edit",
   form,
   labels,
   clients,
   members,
+  currentUserId,
+  canManageComments,
   loading,
   saving,
   deleting = false,
@@ -55,10 +63,20 @@ export function TaskDetailsModal({
 }: TaskDetailsModalProps) {
   const busy = loading || saving || deleting;
   const isCreating = mode === "create";
+  const taskComments = useTaskComments(
+    workspaceId,
+    task?.boardId,
+    task?.columnId,
+    task?.id
+  );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await onSubmit();
+    const submitted = await onSubmit();
+
+    if (submitted) {
+      onClose();
+    }
   }
 
   return (
@@ -70,7 +88,7 @@ export function TaskDetailsModal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
@@ -80,7 +98,7 @@ export function TaskDetailsModal({
             </p>
             <h2
               id="task-details-title"
-              className="mt-1 break-words text-lg font-semibold text-slate-950"
+              className="mt-1 wrap-break-word text-lg font-semibold text-slate-950"
             >
               {isCreating ? "Nova tarefa" : task?.title}
             </h2>
@@ -97,34 +115,42 @@ export function TaskDetailsModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-5">
-          {error && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <AlertCircle size={18} />
-              {error}
-            </div>
-          )}
+        <div
+          className={
+            isCreating
+              ? "min-h-0 flex-1 overflow-y-auto p-5"
+              : "grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_24rem]"
+          }
+        >
+          <div className="min-h-0 overflow-y-auto p-5">
+            {error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <AlertCircle size={18} />
+                {error}
+              </div>
+            )}
 
-          <div className="grid gap-4">
-            <div>
-              <label
-                htmlFor="task-title"
-                className="mb-2 block text-sm font-semibold text-slate-800"
-              >
-                Título
-              </label>
-              <input
-                id="task-title"
-                type="text"
-                value={form.title}
-                onChange={(event) => onChange("title", event.target.value)}
-                minLength={2}
-                maxLength={200}
-                disabled={busy}
-                className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
-                required
-              />
-            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4">
+                <div>
+                  <label
+                    htmlFor="task-title"
+                    className="mb-2 block text-sm font-semibold text-slate-800"
+                  >
+                    Título
+                  </label>
+                  <input
+                    id="task-title"
+                    type="text"
+                    value={form.title}
+                    onChange={(event) => onChange("title", event.target.value)}
+                    minLength={2}
+                    maxLength={200}
+                    disabled={busy}
+                    className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
+                    required
+                  />
+                </div>
 
             <div>
               <label
@@ -318,7 +344,25 @@ export function TaskDetailsModal({
                   : "Salvar alterações"}
             </button>
           </div>
-        </form>
+            </form>
+          </div>
+
+          {!isCreating && (
+            <aside className="min-h-[28rem] border-t border-slate-200 p-5 lg:min-h-0 lg:border-l lg:border-t-0">
+              <TaskCommentsSection
+                comments={taskComments.comments}
+                loading={taskComments.loading}
+                saving={taskComments.saving}
+                error={taskComments.error}
+                currentUserId={currentUserId}
+                canManageComments={canManageComments}
+                onCreateComment={taskComments.createComment}
+                onUpdateComment={taskComments.updateComment}
+                onDeleteComment={taskComments.deleteComment}
+              />
+            </aside>
+          )}
+        </div>
       </div>
     </div>
   );
