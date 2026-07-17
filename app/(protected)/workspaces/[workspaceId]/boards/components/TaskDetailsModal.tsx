@@ -1,11 +1,14 @@
 "use client";
 
-import { AlertCircle, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, CheckSquare, MessageSquare, Trash2, X } from "lucide-react";
 import type { Client } from "../../clients/types/client";
 import type { Member } from "../../members/types/member";
+import { useTaskChecklists } from "../hooks/useTaskChecklists";
 import { useTaskComments } from "../hooks/useTaskComments";
 import type { Label } from "../types/label";
 import type { Task, TaskForm, TaskPriority } from "../types/task";
+import { TaskChecklistsSection } from "./TaskChecklistsSection";
 import { TaskCommentsSection } from "./TaskCommentsSection";
 
 type TaskDetailsModalProps = {
@@ -61,9 +64,18 @@ export function TaskDetailsModal({
   onSubmit,
   onDeleteRequest,
 }: TaskDetailsModalProps) {
+  const [activeSidePanel, setActiveSidePanel] = useState<
+    "comments" | "checklists"
+  >("comments");
   const busy = loading || saving || deleting;
   const isCreating = mode === "create";
   const taskComments = useTaskComments(
+    workspaceId,
+    task?.boardId,
+    task?.columnId,
+    task?.id
+  );
+  const taskChecklists = useTaskChecklists(
     workspaceId,
     task?.boardId,
     task?.columnId,
@@ -88,7 +100,7 @@ export function TaskDetailsModal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="flex h-[90vh] max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
@@ -130,8 +142,8 @@ export function TaskDetailsModal({
               </div>
             )}
 
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-4">
+            <form onSubmit={handleSubmit} className="flex min-h-full flex-col">
+              <div className="grid flex-1 content-start gap-4">
                 <div>
                   <label
                     htmlFor="task-title"
@@ -166,7 +178,7 @@ export function TaskDetailsModal({
                   onChange("description", event.target.value)
                 }
                 maxLength={5000}
-                rows={5}
+                rows={7}
                 disabled={busy}
                 className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm leading-6 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
               />
@@ -239,11 +251,11 @@ export function TaskDetailsModal({
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <fieldset className="rounded-lg border border-slate-200 p-3">
+              <fieldset className="min-h-60 rounded-lg border border-slate-200 p-3">
                 <legend className="px-1 text-sm font-semibold text-slate-800">
                   Labels
                 </legend>
-                <div className="mt-2 grid max-h-44 gap-2 overflow-y-auto pr-1">
+                <div className="mt-2 grid max-h-52 gap-2 overflow-y-auto pr-1">
                   {labels.length === 0 && (
                     <p className="text-sm text-slate-500">
                       Nenhuma label cadastrada.
@@ -274,11 +286,11 @@ export function TaskDetailsModal({
                 </div>
               </fieldset>
 
-              <fieldset className="rounded-lg border border-slate-200 p-3">
+              <fieldset className="min-h-60 rounded-lg border border-slate-200 p-3">
                 <legend className="px-1 text-sm font-semibold text-slate-800">
                   Responsáveis
                 </legend>
-                <div className="mt-2 grid max-h-44 gap-2 overflow-y-auto pr-1">
+                <div className="mt-2 grid max-h-52 gap-2 overflow-y-auto pr-1">
                   {members.length === 0 && (
                     <p className="text-sm text-slate-500">
                       Nenhum membro cadastrado.
@@ -348,18 +360,62 @@ export function TaskDetailsModal({
           </div>
 
           {!isCreating && (
-            <aside className="min-h-112 border-t border-slate-200 p-5 lg:min-h-0 lg:border-l lg:border-t-0">
-              <TaskCommentsSection
-                comments={taskComments.comments}
-                loading={taskComments.loading}
-                saving={taskComments.saving}
-                error={taskComments.error}
-                currentUserId={currentUserId}
-                canManageComments={canManageComments}
-                onCreateComment={taskComments.createComment}
-                onUpdateComment={taskComments.updateComment}
-                onDeleteComment={taskComments.deleteComment}
-              />
+            <aside className="flex min-h-112 flex-col overflow-hidden border-t border-slate-200 p-5 lg:min-h-0 lg:border-l lg:border-t-0">
+              <div className="mb-4 grid shrink-0 grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveSidePanel("comments")}
+                  className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
+                    activeSidePanel === "comments"
+                      ? "bg-white text-slate-950 shadow-sm"
+                      : "text-slate-600 hover:text-slate-950"
+                  }`}
+                >
+                  <MessageSquare size={16} />
+                  Comentários
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSidePanel("checklists")}
+                  className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
+                    activeSidePanel === "checklists"
+                      ? "bg-white text-slate-950 shadow-sm"
+                      : "text-slate-600 hover:text-slate-950"
+                  }`}
+                >
+                  <CheckSquare size={16} />
+                  Checklists
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1">
+                {activeSidePanel === "comments" ? (
+                  <TaskCommentsSection
+                    comments={taskComments.comments}
+                    loading={taskComments.loading}
+                    saving={taskComments.saving}
+                    error={taskComments.error}
+                    currentUserId={currentUserId}
+                    canManageComments={canManageComments}
+                    onCreateComment={taskComments.createComment}
+                    onUpdateComment={taskComments.updateComment}
+                    onDeleteComment={taskComments.deleteComment}
+                  />
+                ) : (
+                  <TaskChecklistsSection
+                    checklists={taskChecklists.checklists}
+                    loading={taskChecklists.loading}
+                    saving={taskChecklists.saving}
+                    error={taskChecklists.error}
+                    onCreateChecklist={taskChecklists.createChecklist}
+                    onUpdateChecklist={taskChecklists.updateChecklist}
+                    onDeleteChecklist={taskChecklists.deleteChecklist}
+                    onCreateItem={taskChecklists.createChecklistItem}
+                    onUpdateItem={taskChecklists.updateChecklistItem}
+                    onDeleteItem={taskChecklists.deleteChecklistItem}
+                  />
+                )}
+              </div>
             </aside>
           )}
         </div>
