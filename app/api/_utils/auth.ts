@@ -21,3 +21,15 @@ export async function getAuthorizationHeader() {
 export function unauthorizedResponse(message = "Não autenticado") {
   return NextResponse.json({ error: message }, { status: 401 });
 }
+
+export function clearAuthCookie(response: NextResponse) {
+  response.cookies.set("access_token", "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
+}

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { NextResponse } from "next/server";
+import { clearAuthCookie } from "@/app/api/_utils/auth";
 
 type BackendErrorBody = {
   error?: string;
@@ -17,6 +18,10 @@ function getBackendErrorStatus(error: unknown) {
   }
 
   return 500;
+}
+
+function isBackendUnavailable(error: unknown) {
+  return axios.isAxiosError(error) && !error.response;
 }
 
 function getBackendErrorBody(error: unknown) {
@@ -62,12 +67,21 @@ export function backendErrorResponse(
 ) {
   logBackendError(error);
 
-  return NextResponse.json(
+  const status = isBackendUnavailable(error) ? 401 : getBackendErrorStatus(error);
+  const response = NextResponse.json(
     {
-      error: getBackendErrorMessage(error, options),
+      error: isBackendUnavailable(error)
+        ? "Sessão encerrada. Faça login novamente."
+        : getBackendErrorMessage(error, options),
     },
     {
-      status: getBackendErrorStatus(error),
+      status,
     }
   );
+
+  if (status === 401) {
+    return clearAuthCookie(response);
+  }
+
+  return response;
 }

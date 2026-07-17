@@ -15,6 +15,14 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      const loginPath = "/login";
+
+      if (window.location.pathname !== loginPath) {
+        window.location.assign(loginPath);
+      }
+    }
+
     const message =
       error.response?.data?.error ||
       error.response?.data?.message ||
