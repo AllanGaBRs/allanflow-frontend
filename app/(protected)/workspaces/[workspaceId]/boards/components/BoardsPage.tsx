@@ -116,6 +116,15 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     loadingBoardMembers;
   const taskDetailsError =
     tasksError || labelsError || clientsError || membersError || boardMembersError;
+  const loadingBoardData = loading || loadingColumns || loadingTasks;
+  const boardPageError =
+    error ||
+    columnsError ||
+    tasksError ||
+    labelsError ||
+    clientsError ||
+    membersError ||
+    boardMembersError;
 
   return (
     <WorkspaceLayout
@@ -135,48 +144,27 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
             onSelectBoard={setSelectedBoardId}
           />
 
-          {error && (
+          {!loadingBoardData && boardPageError && (
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <AlertCircle size={18} />
-              {error}
+              {boardPageError}
             </div>
           )}
 
-          {columnsError && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <AlertCircle size={18} />
-              {columnsError}
-            </div>
-          )}
-
-          {tasksError && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <AlertCircle size={18} />
-              {tasksError}
-            </div>
-          )}
-
-          {(labelsError || clientsError || membersError || boardMembersError) && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <AlertCircle size={18} />
-              {labelsError || clientsError || membersError || boardMembersError}
-            </div>
-          )}
-
-          {loading && (
+          {loadingBoardData && (
             <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-              Carregando boards...
+              Carregando board...
             </div>
           )}
 
-          {!loading && !selectedBoard && (
+          {!loadingBoardData && !selectedBoard && (
             <BoardsEmptyState
               title="Nenhum board disponível"
               description="Quando houver boards neste workspace, eles aparecerão aqui para seleção."
             />
           )}
 
-          {!loading && selectedBoard && (
+          {!loadingBoardData && selectedBoard && (
             <BoardColumnsView
               board={selectedBoard}
               columns={columns}

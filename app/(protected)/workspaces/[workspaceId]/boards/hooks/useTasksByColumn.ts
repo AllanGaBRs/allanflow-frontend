@@ -72,7 +72,7 @@ export function useTasksByColumn(
   columns: Column[]
 ) {
   const [tasksByColumn, setTasksByColumn] = useState<TasksByColumn>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(boardId));
   const [moving, setMoving] = useState(false);
   const [loadingTaskDetails, setLoadingTaskDetails] = useState(false);
   const [savingTask, setSavingTask] = useState(false);
