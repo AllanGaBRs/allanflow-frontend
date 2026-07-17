@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Pencil, Send, Trash2, X } from "lucide-react";
 import type { Comment } from "../types/comment";
+import { TaskCommentDeleteModal } from "./TaskCommentDeleteModal";
 
 type TaskCommentsSectionProps = {
     comments: Comment[];
@@ -30,6 +31,7 @@ export function TaskCommentsSection({
     const [newComment, setNewComment] = useState("");
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState("");
+    const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
 
     async function handleCreateComment(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -126,7 +128,7 @@ export function TaskCommentsSection({
                                                 {canDelete && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => void onDeleteComment(comment.id)}
+                                                        onClick={() => setCommentToDelete(comment)}
                                                         disabled={saving}
                                                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                                                         aria-label="Excluir comentário"
@@ -204,6 +206,16 @@ export function TaskCommentsSection({
                     {saving ? "Enviando..." : "Comentar"}
                 </button>
             </form>
+
+            {commentToDelete && (
+                <TaskCommentDeleteModal
+                    comment={commentToDelete}
+                    loading={saving}
+                    error={error}
+                    onClose={() => setCommentToDelete(null)}
+                    onConfirm={() => onDeleteComment(commentToDelete.id)}
+                />
+            )}
         </section>
     );
 }

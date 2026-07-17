@@ -1,23 +1,23 @@
 "use client";
 
 import { AlertCircle, Trash2, X } from "lucide-react";
-import type { Task } from "../types/task";
+import type { Comment } from "../types/comment";
 
-type TaskDeleteModalProps = {
-  task: Task;
+type TaskCommentDeleteModalProps = {
+  comment: Comment;
   loading: boolean;
   error: string;
   onClose: () => void;
   onConfirm: () => Promise<boolean>;
 };
 
-export function TaskDeleteModal({
-  task,
+export function TaskCommentDeleteModal({
+  comment,
   loading,
   error,
   onClose,
   onConfirm,
-}: TaskDeleteModalProps) {
+}: TaskCommentDeleteModalProps) {
   async function handleConfirm() {
     const deleted = await onConfirm();
 
@@ -28,10 +28,10 @@ export function TaskDeleteModal({
 
   return (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/50 px-4 py-6"
+      className="fixed inset-0 z-70 flex items-center justify-center bg-slate-950/50 px-4 py-6"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="delete-task-title"
+      aria-labelledby="delete-comment-title"
       onClick={onClose}
     >
       <div
@@ -45,10 +45,10 @@ export function TaskDeleteModal({
             </div>
             <div className="min-w-0">
               <h2
-                id="delete-task-title"
+                id="delete-comment-title"
                 className="text-lg font-semibold text-slate-950"
               >
-                Excluir tarefa?
+                Excluir comentário?
               </h2>
               <p className="mt-1 text-sm leading-6 text-slate-600">
                 Essa ação não pode ser desfeita.
@@ -75,8 +75,8 @@ export function TaskDeleteModal({
         )}
 
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          A tarefa <strong className="wrap-break-word">{task.title}</strong> será
-          removida permanentemente.
+          O comentário de <strong>{comment.authorName}</strong> será removido
+          permanentemente.
         </p>
 
         <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

@@ -348,7 +348,7 @@ export function TaskDetailsModal({
           </div>
 
           {!isCreating && (
-            <aside className="min-h-[28rem] border-t border-slate-200 p-5 lg:min-h-0 lg:border-l lg:border-t-0">
+            <aside className="min-h-112 border-t border-slate-200 p-5 lg:min-h-0 lg:border-l lg:border-t-0">
               <TaskCommentsSection
                 comments={taskComments.comments}
                 loading={taskComments.loading}
