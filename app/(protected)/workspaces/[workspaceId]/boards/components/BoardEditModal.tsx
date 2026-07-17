@@ -4,15 +4,23 @@ import { useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Columns3,
   Pencil,
   Plus,
+  Settings,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
+import { useMembers } from "../../members/hooks/useMembers";
+import { useBoardMembers } from "../hooks/useBoardMembers";
 import { useColumns } from "../hooks/useColumns";
+import { BoardMembersSection } from "./BoardMembersSection";
 import { ColumnDeleteModal } from "./ColumnDeleteModal";
 import { ColumnFormModal } from "./ColumnFormModal";
 import type { Board, BoardUpdatePayload, Column } from "../types/board";
+
+type BoardEditTab = "details" | "members" | "columns";
 
 type BoardEditModalProps = {
   workspaceId: string;
@@ -34,6 +42,20 @@ export function BoardEditModal({
   const [isCreateColumnModalOpen, setIsCreateColumnModalOpen] = useState(false);
   const [editingColumn, setEditingColumn] = useState<Column | null>(null);
   const [deletingColumn, setDeletingColumn] = useState<Column | null>(null);
+  const [activeTab, setActiveTab] = useState<BoardEditTab>("details");
+  const {
+    members,
+    loading: loadingWorkspaceMembers,
+    error: workspaceMembersError,
+  } = useMembers(workspaceId);
+  const {
+    boardMembers,
+    loadingBoardMembers,
+    savingBoardMember,
+    boardMembersError,
+    addBoardMember,
+    removeBoardMember,
+  } = useBoardMembers(workspaceId, board.id);
   const {
     columns,
     loading: loadingColumns,
@@ -50,11 +72,25 @@ export function BoardEditModal({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    await onUpdateBoard({
+    const updated = await onUpdateBoard({
       name,
       description,
     });
+
+    if (updated) {
+      onClose();
+    }
   }
+
+  const tabs: Array<{
+    id: BoardEditTab;
+    label: string;
+    icon: React.ComponentType<{ size?: number }>;
+  }> = [
+    { id: "details", label: "Dados", icon: Settings },
+    { id: "members", label: "Membros", icon: Users },
+    { id: "columns", label: "Colunas", icon: Columns3 },
+  ];
 
   return (
     <div
@@ -92,58 +128,99 @@ export function BoardEditModal({
           </button>
         </div>
 
+        <div className="border-b border-slate-200 px-5">
+          <div className="flex gap-1 overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const selected = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`inline-flex min-h-12 items-center justify-center gap-2 border-b-2 px-4 text-sm font-semibold transition ${
+                    selected
+                      ? "border-blue-600 text-blue-700"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
+                  aria-pressed={selected}
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="overflow-y-auto p-5">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-              <div>
-                <label
-                  htmlFor="edit-board-name"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Nome
-                </label>
-                <input
-                  id="edit-board-name"
-                  type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  minLength={2}
-                  maxLength={120}
-                  disabled={loading}
-                  className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
-                  required
-                />
+          {activeTab === "details" && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4">
+                <div>
+                  <label
+                    htmlFor="edit-board-name"
+                    className="mb-2 block text-sm font-semibold text-slate-800"
+                  >
+                    Nome
+                  </label>
+                  <input
+                    id="edit-board-name"
+                    type="text"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    minLength={2}
+                    maxLength={120}
+                    disabled={loading}
+                    className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="edit-board-description"
+                    className="mb-2 block text-sm font-semibold text-slate-800"
+                  >
+                    Descrição
+                  </label>
+                  <input
+                    id="edit-board-description"
+                    type="text"
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    maxLength={255}
+                    disabled={loading}
+                    className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label
-                  htmlFor="edit-board-description"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Descrição
-                </label>
-                <input
-                  id="edit-board-description"
-                  type="text"
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  maxLength={255}
-                  disabled={loading}
-                  className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
-                />
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="min-h-11 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "Salvando..." : "Salvar board"}
+              </button>
+            </form>
+          )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="min-h-11 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? "Salvando..." : "Salvar board"}
-            </button>
-          </form>
+          {activeTab === "members" && (
+            <BoardMembersSection
+              workspaceMembers={members}
+              boardMembers={boardMembers}
+              loading={loadingWorkspaceMembers || loadingBoardMembers}
+              saving={savingBoardMember}
+              error={workspaceMembersError || boardMembersError}
+              onAddMember={addBoardMember}
+              onRemoveMember={removeBoardMember}
+            />
+          )}
 
-          <div className="mt-8 border-t border-slate-200 pt-5">
+          {activeTab === "columns" && (
+          <div>
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-base font-semibold text-slate-950">
@@ -244,6 +321,7 @@ export function BoardEditModal({
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
 

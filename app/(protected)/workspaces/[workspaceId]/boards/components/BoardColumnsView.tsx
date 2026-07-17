@@ -186,7 +186,7 @@ export function BoardColumnsView({
           <h2 className="text-xl font-semibold text-slate-950">
             {board.name}
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
+          <p className="mt-1 line-clamp-1 max-w-3xl text-sm leading-6 text-slate-500">
             {board.description || "Board selecionado"}
           </p>
         </div>
@@ -208,7 +208,7 @@ export function BoardColumnsView({
 
       {!loading && columns.length > 0 && (
         <div className="min-h-0 min-w-0 max-w-full flex-1 overflow-x-auto overflow-y-hidden pb-3">
-          <div className="flex min-h-full w-max gap-4 pr-4">
+          <div className="flex h-full min-h-0 w-max gap-4 pr-4">
             {columns.map((column) => {
               const tasks = tasksByColumn[column.id] ?? [];
               const finalDropPosition = getFinalDropPosition(tasks);
@@ -223,7 +223,7 @@ export function BoardColumnsView({
                   onDrop={(event) =>
                     void handleDrop(event, column.id, finalDropPosition)
                   }
-                  className={`flex min-h-[calc(100vh-15rem)] w-[320px] shrink-0 flex-col rounded-lg border p-4 transition ${
+                  className={`flex h-full min-h-0 w-[320px] shrink-0 flex-col rounded-lg border p-4 transition ${
                     isDragOver
                       ? "border-slate-400 bg-slate-100"
                       : "border-slate-200 bg-slate-50"

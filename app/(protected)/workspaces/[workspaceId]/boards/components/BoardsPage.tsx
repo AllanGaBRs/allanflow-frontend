@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useClients } from "../../clients/hooks/useClients";
 import { useMembers } from "../../members/hooks/useMembers";
+import { useBoardMembers } from "../hooks/useBoardMembers";
 import { useBoards } from "../hooks/useBoards";
 import { useColumns } from "../hooks/useColumns";
 import { useLabels } from "../hooks/useLabels";
@@ -54,6 +55,37 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     error: membersError,
   } = useMembers(workspaceId);
   const {
+    boardMembers,
+    loadingBoardMembers,
+    boardMembersError,
+  } = useBoardMembers(workspaceId, selectedBoard?.id);
+  const taskAssigneeOptions = useMemo(() => {
+    const workspaceManagers = members.filter(
+      (member) => member.role === "OWNER" || member.role === "ADMIN"
+    );
+    const workspaceMemberById = new Map(
+      members.map((member) => [member.userId, member])
+    );
+    const explicitBoardMembers = boardMembers.map((member) => {
+      const workspaceMember = workspaceMemberById.get(member.userId);
+
+      return {
+        userId: member.userId,
+        userName: member.name,
+        userEmail: member.email,
+        role: workspaceMember?.role ?? "MEMBER",
+      };
+    });
+    const assigneeById = new Map(
+      [...workspaceManagers, ...explicitBoardMembers].map((member) => [
+        member.userId,
+        member,
+      ])
+    );
+
+    return Array.from(assigneeById.values());
+  }, [members, boardMembers]);
+  const {
     tasksByColumn,
     loading: loadingTasks,
     error: tasksError,
@@ -75,9 +107,13 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     createTask,
   } = useTasksByColumn(workspaceId, selectedBoard?.id, columns);
   const taskDetailsLoading =
-    loadingTaskDetails || loadingLabels || loadingClients || loadingMembers;
+    loadingTaskDetails ||
+    loadingLabels ||
+    loadingClients ||
+    loadingMembers ||
+    loadingBoardMembers;
   const taskDetailsError =
-    tasksError || labelsError || clientsError || membersError;
+    tasksError || labelsError || clientsError || membersError || boardMembersError;
 
   return (
     <WorkspaceLayout
@@ -118,10 +154,10 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
             </div>
           )}
 
-          {(labelsError || clientsError || membersError) && (
+          {(labelsError || clientsError || membersError || boardMembersError) && (
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <AlertCircle size={18} />
-              {labelsError || clientsError || membersError}
+              {labelsError || clientsError || membersError || boardMembersError}
             </div>
           )}
 
@@ -161,7 +197,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
           form={taskForm}
           labels={labels}
           clients={clients}
-          members={members}
+          members={taskAssigneeOptions}
           loading={taskDetailsLoading}
           saving={savingTask}
           deleting={deletingTask}
@@ -193,7 +229,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
           form={taskForm}
           labels={labels}
           clients={clients}
-          members={members}
+          members={taskAssigneeOptions}
           loading={taskDetailsLoading}
           saving={savingTask}
           error={taskDetailsError}
