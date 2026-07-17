@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { WorkspaceLabelsPage } from "./components/WorkspaceLabelsPage";
 import { getWorkspaceDetailsServerService } from "../services/workspaceDetailsServerService";
-import { canManageWorkspace } from "../utils/workspacePermissions";
 
 type WorkspaceLabelsRouteProps = {
   params: Promise<{
@@ -16,10 +15,6 @@ export default async function LabelsPage({ params }: WorkspaceLabelsRouteProps) 
 
   if (!workspace) {
     redirect("/workspaces");
-  }
-
-  if (workspace && !canManageWorkspace(workspace.userRole)) {
-    redirect(`/workspaces/${workspaceId}`);
   }
 
   return (
