@@ -60,14 +60,6 @@ export function TaskCommentsSection({
 
     return (
         <section className="flex h-full min-h-0 flex-col">
-            <div className="mb-4 shrink-0">
-                <h3 className="text-base font-semibold text-slate-950">
-                    Comentários
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                    Acompanhe decisões e atualizações desta tarefa.
-                </p>
-            </div>
             {error && (
                 <div className="mb-4 shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {error}

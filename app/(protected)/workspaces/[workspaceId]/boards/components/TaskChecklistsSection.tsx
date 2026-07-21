@@ -137,13 +137,6 @@ export function TaskChecklistsSection({
 
   return (
     <section className="flex h-full min-h-0 flex-col">
-      <div className="mb-4 shrink-0">
-        <h3 className="text-base font-semibold text-slate-950">Checklists</h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Quebre a tarefa em passos pequenos.
-        </p>
-      </div>
-
       {error && (
         <div className="mb-4 shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
@@ -152,9 +145,13 @@ export function TaskChecklistsSection({
 
       <form
         onSubmit={handleCreateChecklist}
-        className="mb-4 grid shrink-0 gap-2"
+        className="mb-4 flex shrink-0 gap-2"
       >
+        <label className="sr-only" htmlFor="new-checklist-title">
+          Título do novo checklist
+        </label>
         <input
+          id="new-checklist-title"
           type="text"
           value={newChecklistTitle}
           onChange={(event) => setNewChecklistTitle(event.target.value)}
@@ -162,15 +159,16 @@ export function TaskChecklistsSection({
           maxLength={120}
           disabled={saving}
           placeholder="Novo checklist"
-          className="min-h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
+          className="min-h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
         />
         <button
           type="submit"
           disabled={saving || newChecklistTitle.trim().length < 2}
-          className="inline-flex min-h-10 w-fit items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={saving ? "Criando checklist" : "Adicionar checklist"}
+          title="Adicionar checklist"
         >
           <Plus size={16} />
-          {saving ? "Criando..." : "Adicionar checklist"}
         </button>
       </form>
 

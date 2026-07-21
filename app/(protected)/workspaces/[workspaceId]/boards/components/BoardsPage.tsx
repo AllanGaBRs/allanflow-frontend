@@ -11,6 +11,7 @@ import { useBoards } from "../hooks/useBoards";
 import { useColumns } from "../hooks/useColumns";
 import { useLabels } from "../hooks/useLabels";
 import { useTasksByColumn } from "../hooks/useTasksByColumn";
+import { BoardHeader } from "./BoardHeader";
 import { BoardColumnsView } from "./BoardColumnsView";
 import { BoardsEmptyState } from "./BoardsEmptyState";
 import { BoardsToolbar } from "./BoardsToolbar";
@@ -133,16 +134,21 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
       headerTitle={initialWorkspace.name}
       headerSubtitle=""
     >
-      <section className="min-w-0 flex-1 overflow-hidden px-6 py-6 lg:px-8">
-        <div className="flex h-full min-h-[calc(100vh-7rem)] min-w-0 max-w-full flex-col gap-5 overflow-hidden">
-          <BoardsToolbar
-            workspaceId={workspaceId}
-            boards={boards}
-            selectedBoardId={selectedBoard?.id ?? ""}
-            loading={loading}
-            canManageBoards={canManageBoards}
-            onSelectBoard={setSelectedBoardId}
-          />
+      <section className="h-[calc(100dvh-4rem)] min-h-0 min-w-0 flex-1 overflow-hidden px-6 py-6 lg:px-8">
+        <div className="flex h-full min-h-0 min-w-0 max-w-full flex-col gap-5 overflow-hidden">
+          {selectedBoard && (
+            <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
+              <BoardHeader board={selectedBoard} />
+              <BoardsToolbar
+                workspaceId={workspaceId}
+                boards={boards}
+                selectedBoardId={selectedBoard.id}
+                loading={loading}
+                canManageBoards={canManageBoards}
+                onSelectBoard={setSelectedBoardId}
+              />
+            </div>
+          )}
 
           {!loadingBoardData && boardPageError && (
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -166,7 +172,6 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
 
           {!loadingBoardData && selectedBoard && (
             <BoardColumnsView
-              board={selectedBoard}
               columns={columns}
               loading={loadingColumns}
               tasksByColumn={tasksByColumn}

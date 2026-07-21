@@ -108,25 +108,37 @@ export function TaskCard({
       )}
 
       {(dueDate || task.client || visibleAssignees.length > 0) && (
-        <div className="mt-3 grid gap-2 text-xs text-slate-500">
+        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-slate-500">
           {dueDate && (
             <span className="flex min-w-0 items-center gap-1.5">
               <CalendarDays size={14} className="shrink-0" />
-              <span className="truncate">{dueDate}</span>
+              <span className="truncate" title={dueDate}>
+                {dueDate}
+              </span>
             </span>
           )}
 
           {task.client && (
             <span className="flex min-w-0 items-center gap-1.5">
               <Building2 size={14} className="shrink-0" />
-              <span className="truncate">{task.client.name}</span>
+              <span className="truncate" title={task.client.name}>
+                {task.client.name}
+              </span>
             </span>
           )}
 
           {visibleAssignees.length > 0 && (
             <span className="flex min-w-0 items-center gap-1.5">
               <UserRound size={14} className="shrink-0" />
-              <span className="truncate">
+              <span
+                className="truncate"
+                title={visibleAssignees
+                  .map(
+                    (assignee) =>
+                      assignee.name || assignee.email || "Usuário"
+                  )
+                  .join(", ")}
+              >
                 {visibleAssignees
                   .map((assignee) => assignee.name || assignee.email || "Usuário")
                   .join(", ")}

@@ -3,14 +3,13 @@
 import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import type { DragEvent } from "react";
-import type { Board, Column } from "../types/board";
+import type { Column } from "../types/board";
 import type { TasksByColumn } from "../hooks/useTasksByColumn";
 import type { Task } from "../types/task";
 import { BoardsEmptyState } from "./BoardsEmptyState";
 import { TaskCard } from "./TaskCard";
 
 type BoardColumnsViewProps = {
-  board: Board;
   columns: Column[];
   loading: boolean;
   tasksByColumn: TasksByColumn;
@@ -37,7 +36,6 @@ type DragOverTarget = {
 };
 
 export function BoardColumnsView({
-  board,
   columns,
   loading,
   tasksByColumn,
@@ -181,17 +179,6 @@ export function BoardColumnsView({
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <div className="mb-4 border-b border-slate-200 pb-4">
-        <div className="min-w-0">
-          <h2 className="text-xl font-semibold text-slate-950">
-            {board.name}
-          </h2>
-          <p className="mt-1 line-clamp-1 max-w-3xl text-sm leading-6 text-slate-500">
-            {board.description || "Board selecionado"}
-          </p>
-        </div>
-      </div>
-
       {loading && (
         <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
           Carregando colunas...
@@ -234,25 +221,24 @@ export function BoardColumnsView({
                       <h3 className="text-sm font-semibold text-slate-900">
                         {column.name}
                       </h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Posição {column.position}
-                      </p>
                     </div>
 
-                    <span className="inline-flex min-h-7 shrink-0 items-center rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600">
-                      {tasks.length}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span className="inline-flex min-h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-600">
+                        {tasks.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onCreateTask(column.id)}
+                        disabled={tasksLoading || movingTask}
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label={`Adicionar tarefa em ${column.name}`}
+                        title="Adicionar tarefa"
+                      >
+                        <Plus size={15} />
+                      </button>
+                    </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => onCreateTask(column.id)}
-                    disabled={tasksLoading || movingTask}
-                    className="mb-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <Plus size={16} />
-                    Adicionar tarefa
-                  </button>
 
                   {tasksLoading && (
                     <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
@@ -271,7 +257,7 @@ export function BoardColumnsView({
                   )}
 
                   {!tasksLoading && tasks.length > 0 && (
-                    <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                    <div className="min-h-0 flex-1 overscroll-contain overflow-y-auto pr-1">
                       {tasks.map((task, index) => {
                         const dropBeforePosition = getDropPosition(
                           tasks,

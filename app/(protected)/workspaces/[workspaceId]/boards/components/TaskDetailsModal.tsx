@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, CheckSquare, MessageSquare, Trash2, X } from "lucide-react";
+import { AlertCircle, CheckSquare, FileText, Trash2, X } from "lucide-react";
 import type { Client } from "../../clients/types/client";
 import type { Member } from "../../members/types/member";
 import { useTaskChecklists } from "../hooks/useTaskChecklists";
@@ -64,9 +64,9 @@ export function TaskDetailsModal({
   onSubmit,
   onDeleteRequest,
 }: TaskDetailsModalProps) {
-  const [activeSidePanel, setActiveSidePanel] = useState<
-    "comments" | "checklists"
-  >("comments");
+  const [activeMainTab, setActiveMainTab] = useState<"details" | "checklists">(
+    "details"
+  );
   const busy = loading || saving || deleting;
   const isCreating = mode === "create";
   const taskComments = useTaskComments(
@@ -96,7 +96,7 @@ export function TaskDetailsModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="task-details-title"
+      aria-label={isCreating ? "Criar tarefa" : "Detalhes da tarefa"}
       onClick={onClose}
     >
       <div
@@ -108,12 +108,6 @@ export function TaskDetailsModal({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {columnName}
             </p>
-            <h2
-              id="task-details-title"
-              className="mt-1 wrap-break-word text-lg font-semibold text-slate-950"
-            >
-              {isCreating ? "Nova tarefa" : task?.title}
-            </h2>
           </div>
 
           <button
@@ -134,7 +128,7 @@ export function TaskDetailsModal({
               : "grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_24rem]"
           }
         >
-          <div className="min-h-0 overflow-y-auto p-5">
+          <div className="flex min-h-0 flex-col p-5">
             {error && (
               <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 <AlertCircle size={18} />
@@ -142,6 +136,45 @@ export function TaskDetailsModal({
               </div>
             )}
 
+            {!isCreating && (
+              <div
+                className="mb-4 flex shrink-0 gap-2 border-b border-slate-200"
+                role="tablist"
+                aria-label="Seções da tarefa"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMainTab === "details"}
+                  onClick={() => setActiveMainTab("details")}
+                  className={`inline-flex min-h-10 items-center justify-center gap-2 border-b-2 px-3 text-sm font-semibold transition ${
+                    activeMainTab === "details"
+                      ? "border-blue-600 text-blue-700"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <FileText size={16} />
+                  Detalhes
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMainTab === "checklists"}
+                  onClick={() => setActiveMainTab("checklists")}
+                  className={`inline-flex min-h-10 items-center justify-center gap-2 border-b-2 px-3 text-sm font-semibold transition ${
+                    activeMainTab === "checklists"
+                      ? "border-blue-600 text-blue-700"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <CheckSquare size={16} />
+                  Checklists
+                </button>
+              </div>
+            )}
+
+            {(isCreating || activeMainTab === "details") && (
+            <div className="min-h-0 flex-1 overflow-y-auto">
             <form onSubmit={handleSubmit} className="flex min-h-full flex-col">
               <div className="grid flex-1 content-start gap-4">
                 <div>
@@ -357,64 +390,41 @@ export function TaskDetailsModal({
             </button>
           </div>
             </form>
+            </div>
+            )}
+
+            {!isCreating && activeMainTab === "checklists" && (
+              <div className="min-h-0 flex-1">
+                <TaskChecklistsSection
+                  checklists={taskChecklists.checklists}
+                  loading={taskChecklists.loading}
+                  saving={taskChecklists.saving}
+                  error={taskChecklists.error}
+                  onCreateChecklist={taskChecklists.createChecklist}
+                  onUpdateChecklist={taskChecklists.updateChecklist}
+                  onDeleteChecklist={taskChecklists.deleteChecklist}
+                  onCreateItem={taskChecklists.createChecklistItem}
+                  onUpdateItem={taskChecklists.updateChecklistItem}
+                  onDeleteItem={taskChecklists.deleteChecklistItem}
+                />
+              </div>
+            )}
           </div>
 
           {!isCreating && (
             <aside className="flex min-h-112 flex-col overflow-hidden border-t border-slate-200 p-5 lg:min-h-0 lg:border-l lg:border-t-0">
-              <div className="mb-4 grid shrink-0 grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => setActiveSidePanel("comments")}
-                  className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
-                    activeSidePanel === "comments"
-                      ? "bg-white text-slate-950 shadow-sm"
-                      : "text-slate-600 hover:text-slate-950"
-                  }`}
-                >
-                  <MessageSquare size={16} />
-                  Comentários
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveSidePanel("checklists")}
-                  className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition ${
-                    activeSidePanel === "checklists"
-                      ? "bg-white text-slate-950 shadow-sm"
-                      : "text-slate-600 hover:text-slate-950"
-                  }`}
-                >
-                  <CheckSquare size={16} />
-                  Checklists
-                </button>
-              </div>
-
               <div className="min-h-0 flex-1">
-                {activeSidePanel === "comments" ? (
-                  <TaskCommentsSection
-                    comments={taskComments.comments}
-                    loading={taskComments.loading}
-                    saving={taskComments.saving}
-                    error={taskComments.error}
-                    currentUserId={currentUserId}
-                    canManageComments={canManageComments}
-                    onCreateComment={taskComments.createComment}
-                    onUpdateComment={taskComments.updateComment}
-                    onDeleteComment={taskComments.deleteComment}
-                  />
-                ) : (
-                  <TaskChecklistsSection
-                    checklists={taskChecklists.checklists}
-                    loading={taskChecklists.loading}
-                    saving={taskChecklists.saving}
-                    error={taskChecklists.error}
-                    onCreateChecklist={taskChecklists.createChecklist}
-                    onUpdateChecklist={taskChecklists.updateChecklist}
-                    onDeleteChecklist={taskChecklists.deleteChecklist}
-                    onCreateItem={taskChecklists.createChecklistItem}
-                    onUpdateItem={taskChecklists.updateChecklistItem}
-                    onDeleteItem={taskChecklists.deleteChecklistItem}
-                  />
-                )}
+                <TaskCommentsSection
+                  comments={taskComments.comments}
+                  loading={taskComments.loading}
+                  saving={taskComments.saving}
+                  error={taskComments.error}
+                  currentUserId={currentUserId}
+                  canManageComments={canManageComments}
+                  onCreateComment={taskComments.createComment}
+                  onUpdateComment={taskComments.updateComment}
+                  onDeleteComment={taskComments.deleteComment}
+                />
               </div>
             </aside>
           )}
