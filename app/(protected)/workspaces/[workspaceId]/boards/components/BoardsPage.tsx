@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
@@ -167,7 +168,16 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
             <BoardsEmptyState
               title="Nenhum board disponível"
               description="Quando houver boards neste workspace, eles aparecerão aqui para seleção."
-            />
+            >
+              {canManageBoards && (
+                <Link
+                  href={`/workspaces/${workspaceId}/boards/manage`}
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                >
+                  Gerenciar boards
+                </Link>
+              )}
+            </BoardsEmptyState>
           )}
 
           {!loadingBoardData && selectedBoard && (

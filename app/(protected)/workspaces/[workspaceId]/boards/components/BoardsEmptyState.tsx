@@ -1,15 +1,18 @@
 import { Kanban } from "lucide-react";
+import type { ReactNode } from "react";
 
 type BoardsEmptyStateProps = {
   title: string;
   description: string;
   centered?: boolean;
+  children?: ReactNode;
 };
 
 export function BoardsEmptyState({
   title,
   description,
   centered = false,
+  children,
 }: BoardsEmptyStateProps) {
   const Element = centered ? "div" : "section";
 
@@ -31,6 +34,8 @@ export function BoardsEmptyState({
         <p className="mt-2 text-sm leading-6 text-slate-500">
           {description}
         </p>
+
+        {children && <div className="mt-5">{children}</div>}
       </div>
     </Element>
   );
