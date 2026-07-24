@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { WorkspaceDetails } from "./components/WorkspaceDetails";
+import { WorkspaceDashboardPage } from "./dashboard/components/WorkspaceDashboardPage";
 import { getWorkspaceDetailsServerService } from "./services/workspaceDetailsServerService";
+import { canManageWorkspace } from "./utils/workspacePermissions";
 
 type WorkspacesDetailsPageProps = {
   params: Promise<{
@@ -20,8 +21,12 @@ export default async function WorkspaceDetailsPage({
     redirect("/workspaces");
   }
 
+  if (!canManageWorkspace(workspace.userRole)) {
+    redirect(`/workspaces/${workspaceId}/boards`);
+  }
+
   return (
-    <WorkspaceDetails
+    <WorkspaceDashboardPage
       workspaceId={workspaceId}
       initialWorkspace={workspace}
       initialError={error}

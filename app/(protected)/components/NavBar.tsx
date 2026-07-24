@@ -77,7 +77,7 @@ export function NavBar({
           defaultMenuItems[5],
         ]
       : workspaceId
-        ? [defaultMenuItems[0], defaultMenuItems[2], defaultMenuItems[3], defaultMenuItems[4]]
+        ? [defaultMenuItems[2], defaultMenuItems[3], defaultMenuItems[4]]
         : defaultMenuItems;
   const workspacesMenuItems = defaultMenuItems.filter(
     (item) => item.label === "Workspaces"
