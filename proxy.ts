@@ -7,13 +7,14 @@ export function proxy(req: NextRequest) {
   const token = req.cookies.get("access_token")?.value;
   const pathname = req.nextUrl.pathname;
 
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isInvitationRoute = pathname.startsWith("/invitations/");
+  const isPublicRoute = publicRoutes.includes(pathname) || isInvitationRoute;
 
   if (!token && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (token && isPublicRoute) {
+  if (token && publicRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/workspaces", req.url));
   }
 

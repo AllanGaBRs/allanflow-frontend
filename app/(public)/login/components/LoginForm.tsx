@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 
 export function LoginForm() {
-  const { login, loading, error } = useLogin();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next") ?? undefined;
+  const { login, loading, error } = useLogin(nextPath);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

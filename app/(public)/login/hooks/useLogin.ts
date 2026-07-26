@@ -4,8 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginService } from "../services/authService";
 
-export function useLogin() {
+function normalizeRedirectTo(redirectTo?: string) {
+  if (!redirectTo || !redirectTo.startsWith("/")) {
+    return "/workspaces";
+  }
+
+  return redirectTo;
+}
+
+export function useLogin(redirectTo?: string) {
   const router = useRouter();
+  const destination = normalizeRedirectTo(redirectTo);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -16,7 +25,7 @@ export function useLogin() {
 
     try {
       await loginService({ email, password });
-      router.push("/workspaces");
+      router.push(destination);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
