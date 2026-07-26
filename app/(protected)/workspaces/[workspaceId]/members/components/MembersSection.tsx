@@ -13,12 +13,13 @@ type Props = {
 
 export function MembersSection({ workspaceId }: Props) {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [inviteSuccessMessage, setInviteSuccessMessage] = useState("");
   const {
     members,
     loading,
     saving,
     error,
-    addMember,
+    inviteMember,
     updateRole,
     removeMember,
   } = useMembers(workspaceId);
@@ -32,13 +33,16 @@ export function MembersSection({ workspaceId }: Props) {
   }, [saving]);
 
   async function handleAddMember(email: string, role: MembershipRole) {
-    const created = await addMember(email, role);
+    const invited = await inviteMember(email, role);
 
-    if (created) {
+    if (invited) {
+      setInviteSuccessMessage(
+        `Convite enviado para ${email.trim().toLowerCase()}.`
+      );
       setIsAddMemberModalOpen(false);
     }
 
-    return created;
+    return invited;
   }
 
   useEffect(() => {
@@ -73,9 +77,15 @@ export function MembersSection({ workspaceId }: Props) {
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
           <Plus size={18} />
-          Add membro
+          Convidar membro
         </button>
       </div>
+
+      {inviteSuccessMessage && (
+        <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          {inviteSuccessMessage}
+        </p>
+      )}
 
       {error && (
         <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
@@ -119,7 +129,7 @@ export function MembersSection({ workspaceId }: Props) {
                   id="add-member-title"
                   className="text-lg font-semibold text-slate-950"
                 >
-                  Add membro
+                  Convidar membro
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
                   Envie um convite para acessar este workspace.

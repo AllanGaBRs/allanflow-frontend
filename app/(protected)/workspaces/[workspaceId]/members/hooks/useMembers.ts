@@ -1,12 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  addMemberService,
-  getMembersService,
-  removeMemberService,
-  updateMemberRoleService,
-} from "../services/memberService";
+import { getMembersService, removeMemberService, updateMemberRoleService } from "../services/memberService";
+import { sendWorkspaceInvitationService } from "../services/invitationService";
 import type { Member, MembershipRole } from "../types/member";
 
 export function useMembers(workspaceId: string) {
@@ -29,16 +25,15 @@ export function useMembers(workspaceId: string) {
     }
   }, [workspaceId]);
 
-  async function addMember(email: string, role: MembershipRole) {
+  async function inviteMember(email: string, role: MembershipRole) {
     setSaving(true);
     setError("");
 
     try {
-      const member = await addMemberService(workspaceId, { email, role });
-      setMembers((prev) => [...prev, member]);
+      await sendWorkspaceInvitationService(workspaceId, { email, role });
       return true;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Erro ao adicionar membro");
+      setError(err instanceof Error ? err.message : "Erro ao enviar convite");
       return false;
     } finally {
       setSaving(false);
@@ -120,7 +115,7 @@ export function useMembers(workspaceId: string) {
     loading,
     saving,
     error,
-    addMember,
+    inviteMember,
     updateRole,
     removeMember,
     loadMembers,

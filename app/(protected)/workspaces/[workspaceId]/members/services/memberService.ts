@@ -1,9 +1,5 @@
 import { api } from "@/app/api/api";
-import type {
-  AddMemberRequest,
-  Member,
-  UpdateMemberRoleRequest,
-} from "../types/member";
+import type { Member, UpdateMemberRoleRequest } from "../types/member";
 
 type MemberResponse = {
   membershipId: string;
@@ -27,17 +23,6 @@ export async function getMembersService(workspaceId: string): Promise<Member[]> 
     `/workspaces/${workspaceId}/members`
   );
   return data.map(normalizeMember);
-}
-
-export async function addMemberService(
-  workspaceId: string,
-  payload: AddMemberRequest
-): Promise<Member> {
-  const { data } = await api.post<MemberResponse>(
-    `/workspaces/${workspaceId}/members`,
-    payload
-  );
-  return normalizeMember(data);
 }
 
 export async function updateMemberRoleService(

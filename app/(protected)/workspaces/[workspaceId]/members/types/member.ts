@@ -7,11 +7,6 @@ export type Member = {
   role: MembershipRole;
 };
 
-export type AddMemberRequest = {
-  email: string;
-  role: MembershipRole;
-};
-
 export type UpdateMemberRoleRequest = {
   role: MembershipRole;
 };

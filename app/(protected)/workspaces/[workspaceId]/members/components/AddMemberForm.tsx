@@ -26,7 +26,7 @@ export function AddMemberForm({ loading, onSubmit }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h3 className="mb-4 text-sm font-semibold text-slate-800">
-        Adicionar membro
+        Convidar membro
       </h3>
 
       <div className="grid gap-3">
@@ -54,7 +54,7 @@ export function AddMemberForm({ loading, onSubmit }: Props) {
           disabled={loading}
           className="min-h-11 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "Adicionando..." : "Adicionar"}
+          {loading ? "Enviando..." : "Convidar"}
         </button>
       </div>
     </form>
