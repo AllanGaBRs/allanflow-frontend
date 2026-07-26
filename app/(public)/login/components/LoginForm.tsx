@@ -48,6 +48,14 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div className="mt-2 text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-400 hover:underline"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
