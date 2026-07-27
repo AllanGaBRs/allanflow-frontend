@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Allan Flow",
-  description: "Allan Tech",
+  title: {
+    default: "AllanFlow",
+    template: "%s | AllanFlow",
+  },
+  description: "Plataforma colaborativa de gerenciamento de tarefas.",
 };
 
 export default function RootLayout({
@@ -24,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

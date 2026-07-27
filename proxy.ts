@@ -8,9 +8,10 @@ export function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   const isInvitationRoute = pathname.startsWith("/invitations/");
+  const isPublicAsset = pathname.startsWith("/img/");
   const isPublicRoute = publicRoutes.includes(pathname) || isInvitationRoute;
 
-  if (!token && !isPublicRoute) {
+  if (!token && !isPublicRoute && !isPublicAsset) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
