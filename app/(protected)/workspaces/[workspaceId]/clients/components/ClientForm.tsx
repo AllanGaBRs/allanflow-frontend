@@ -61,7 +61,6 @@ export function ClientForm({
           disabled={loading}
           className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           placeholder="cliente@email.com"
-          required
         />
       </div>
 
