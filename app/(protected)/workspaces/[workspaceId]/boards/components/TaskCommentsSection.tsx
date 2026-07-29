@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Pencil, Send, Trash2, X } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import type { Comment } from "../types/comment";
 import { TaskCommentDeleteModal } from "./TaskCommentDeleteModal";
 
@@ -32,6 +33,7 @@ export function TaskCommentsSection({
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState("");
     const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+    useToastMessage(error, { title: "Erro ao gerenciar comentários" });
 
     async function handleCreateComment(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -60,12 +62,6 @@ export function TaskCommentsSection({
 
     return (
         <section className="flex h-full min-h-0 flex-col">
-            {error && (
-                <div className="mb-4 shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {error}
-                </div>
-            )}
-
             <div className="min-h-0 flex-1 overflow-y-auto pr-1">
                 {loading && (
                     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">

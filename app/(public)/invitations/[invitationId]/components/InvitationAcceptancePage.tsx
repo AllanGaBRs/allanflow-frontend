@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useInvitation } from "../hooks/useInvitation";
 
 type Props = {
@@ -45,6 +46,14 @@ export function InvitationAcceptancePage({ invitationId }: Props) {
   const isReady = !invitationLoading && !sessionLoading && invitation;
   const isLoggedIn = Boolean(session);
   const loginHref = `/login?next=/invitations/${invitationId}`;
+  useToastMessage(sessionError, { variant: "warning", title: "Sessão" });
+  useToastMessage(error, { title: "Convite" });
+  useToastMessage(
+    isReady && !isLoggedIn
+      ? "Faça login com a conta convidada para aceitar o convite."
+      : "",
+    { variant: "warning", title: "Sessão necessária" }
+  );
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#020B1F] px-4 py-8">
@@ -87,9 +96,9 @@ export function InvitationAcceptancePage({ invitationId }: Props) {
                 Logado como <span className="text-white">{session?.email}</span>.
               </p>
             ) : (
-              <div className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-3 text-sm text-amber-100">
-                <p>Você precisa entrar com a conta convidada para aceitar o convite.</p>
-                <Link href={loginHref} className="mt-2 inline-block text-amber-200 underline">
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white/[0.03] px-3 py-3 text-sm text-white/70">
+                <p>Você precisa entrar com a conta convidada para continuar.</p>
+                <Link href={loginHref} className="text-blue-400 underline">
                   Ir para o login
                 </Link>
               </div>
@@ -117,18 +126,6 @@ export function InvitationAcceptancePage({ invitationId }: Props) {
                 />
               </div>
 
-              {sessionError && (
-                <p role="alert" className="text-sm text-amber-200">
-                  {sessionError}
-                </p>
-              )}
-
-              {error && (
-                <p role="alert" className="text-sm text-red-400">
-                  {error}
-                </p>
-              )}
-
               <button
                 type="submit"
                 disabled={submitting || !isLoggedIn || code.length !== 7}
@@ -147,10 +144,6 @@ export function InvitationAcceptancePage({ invitationId }: Props) {
         {!invitationLoading && !invitation && error && (
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white">Convite indisponível</h1>
-            <p role="status" className="mt-3 text-sm text-white/60">
-              {error}
-            </p>
-
             <div className="mt-6 flex flex-col gap-3">
               <Link
                 href={loginHref}

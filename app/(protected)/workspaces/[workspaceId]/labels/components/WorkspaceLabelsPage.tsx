@@ -6,6 +6,7 @@ import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { LabelsManageSection } from "../../boards/components/LabelsManageSection";
 import { useBoards } from "../../boards/hooks/useBoards";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 
 type WorkspaceLabelsPageProps = {
   workspaceId: string;
@@ -19,6 +20,8 @@ export function WorkspaceLabelsPage({
   initialError,
 }: WorkspaceLabelsPageProps) {
   const { boards, loading, error } = useBoards(workspaceId);
+  useToastMessage(initialError, { title: "Workspace" });
+  useToastMessage(error, { title: "Erro ao buscar boards" });
   const [selectedBoardIdState, setSelectedBoardIdState] = useState("");
   const selectedBoardId = selectedBoardIdState || boards[0]?.id || "";
 
@@ -45,18 +48,6 @@ export function WorkspaceLabelsPage({
               </div>
             </div>
           </header>
-
-          {initialError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {initialError}
-            </div>
-          )}
-
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
 
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <label

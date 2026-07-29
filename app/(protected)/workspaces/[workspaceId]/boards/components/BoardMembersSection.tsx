@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import type { Member } from "../../members/types/member";
 import type { BoardMember } from "../types/boardMember";
 
@@ -25,6 +26,7 @@ export function BoardMembersSection({
   onRemoveMember,
 }: BoardMembersSectionProps) {
   const [selectedUserId, setSelectedUserId] = useState("");
+  useToastMessage(error, { title: "Erro ao gerenciar membros do board" });
   const workspaceMemberRoleById = useMemo(
     () =>
       new Map(
@@ -109,12 +111,6 @@ export function BoardMembersSection({
           </button>
         </form>
       </div>
-
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       {loading && (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">

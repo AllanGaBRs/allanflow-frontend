@@ -12,6 +12,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useMembers } from "../../members/hooks/useMembers";
 import { useBoardMembers } from "../hooks/useBoardMembers";
 import { useColumns } from "../hooks/useColumns";
@@ -68,6 +69,7 @@ export function BoardEditModal({
   } = useColumns(workspaceId, board.id, {
     initialColumns: board.columns,
   });
+  useToastMessage(columnsError, { title: "Erro nas colunas" });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -240,12 +242,6 @@ export function BoardEditModal({
                 Nova coluna
               </button>
             </div>
-
-            {columnsError && (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {columnsError}
-              </div>
-            )}
 
             {loadingColumns && (
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">

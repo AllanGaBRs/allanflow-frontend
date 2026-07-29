@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircle, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import type { Comment } from "../types/comment";
 
 type TaskCommentDeleteModalProps = {
@@ -18,6 +19,8 @@ export function TaskCommentDeleteModal({
   onClose,
   onConfirm,
 }: TaskCommentDeleteModalProps) {
+  useToastMessage(error, { title: "Erro ao excluir comentário" });
+
   async function handleConfirm() {
     const deleted = await onConfirm();
 
@@ -66,13 +69,6 @@ export function TaskCommentDeleteModal({
             <X size={18} />
           </button>
         </div>
-
-        {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            <AlertCircle size={18} className="shrink-0" />
-            {error}
-          </div>
-        )}
 
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           O comentário de <strong>{comment.authorName}</strong> será removido

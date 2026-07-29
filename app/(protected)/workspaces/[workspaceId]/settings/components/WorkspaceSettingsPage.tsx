@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, CheckCircle2, Trash2, X } from "lucide-react";
+import { CheckCircle2, Trash2, X } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useWorkspaceSettings } from "../hooks/useWorkspaceSettings";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 
 type WorkspaceSettingsPageProps = {
   workspaceId: string;
@@ -17,6 +18,11 @@ export function WorkspaceSettingsPage({
   initialWorkspace,
   initialError,
 }: WorkspaceSettingsPageProps) {
+  const workspaceLoadError = initialWorkspace
+    ? ""
+    : initialError || "Não foi possível carregar o workspace.";
+  useToastMessage(workspaceLoadError, { title: "Workspace" });
+
   if (!initialWorkspace) {
     return (
       <WorkspaceLayout
@@ -24,11 +30,7 @@ export function WorkspaceSettingsPage({
         headerTitle="Configurações"
         headerSubtitle=""
       >
-        <section className="flex-1 p-8">
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {initialError || "Não foi possível carregar o workspace."}
-          </div>
-        </section>
+        <section className="flex-1 p-8" />
       </WorkspaceLayout>
     );
   }
@@ -52,6 +54,7 @@ function WorkspaceSettingsContent({
     updateWorkspace,
     deleteWorkspace,
   } = useWorkspaceSettings(initialWorkspace);
+  useToastMessage(error, { title: "Erro ao salvar workspace" });
   const [name, setName] = useState(workspace.name);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -59,6 +62,10 @@ function WorkspaceSettingsContent({
     workspace.userRole === "OWNER" || workspace.userRole === "ADMIN";
   const canDeleteWorkspace =
     workspace.userRole === "OWNER" && deleteConfirmation === workspace.name;
+  useToastMessage(
+    !canManageWorkspace ? "Você não tem permissão para alterar este workspace." : "",
+    { variant: "warning", title: "Permissão" }
+  );
 
   async function handleUpdate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -110,23 +117,10 @@ function WorkspaceSettingsContent({
             </p>
           </div>
 
-          {error && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <AlertCircle size={18} />
-              {error}
-            </div>
-          )}
-
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
               <CheckCircle2 size={18} />
               {success}
-            </div>
-          )}
-
-          {!canManageWorkspace && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Você não tem permissão para alterar este workspace.
             </div>
           )}
 

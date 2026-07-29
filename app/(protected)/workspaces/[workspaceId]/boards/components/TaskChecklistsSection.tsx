@@ -12,6 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import type { Checklist, ChecklistItem } from "../types/checklist";
 import { TaskChecklistDeleteModal } from "./TaskChecklistDeleteModal";
 
@@ -66,6 +67,7 @@ export function TaskChecklistsSection({
     checklist: Checklist;
     item: ChecklistItem;
   } | null>(null);
+  useToastMessage(error, { title: "Erro ao gerenciar checklists" });
 
   function toggleChecklistCollapsed(checklistId: string) {
     setCollapsedChecklistIds((prev) => ({
@@ -137,12 +139,6 @@ export function TaskChecklistsSection({
 
   return (
     <section className="flex h-full min-h-0 flex-col">
-      {error && (
-        <div className="mb-4 shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
       <form
         onSubmit={handleCreateChecklist}
         className="mb-4 flex shrink-0 gap-2"

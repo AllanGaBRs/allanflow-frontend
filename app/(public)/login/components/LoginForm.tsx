@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useLogin } from "../hooks/useLogin";
 import { GoogleOAuthButton } from "../../components/GoogleOAuthButton";
 
@@ -14,6 +15,7 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") ?? undefined;
   const { login, loading, error } = useLogin(nextPath);
+  useToastMessage(error, { title: "Erro no login" });
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -65,8 +67,6 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
               </Link>
             </div>
           </div>
-
-          {error && <p className="text-sm text-red-400">{error}</p>}
 
           <button
             type="submit"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useRegister } from "../hooks/useRegister";
 import { GoogleOAuthButton } from "../../components/GoogleOAuthButton";
 
@@ -11,6 +12,7 @@ type RegisterFormProps = {
 
 export function RegisterForm({ googleOAuthUrl }: RegisterFormProps) {
   const { register, loading, error } = useRegister();
+  useToastMessage(error, { title: "Erro ao criar conta" });
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,8 +70,6 @@ export function RegisterForm({ googleOAuthUrl }: RegisterFormProps) {
               minLength={6}
             />
           </div>
-
-          {error && <p className="text-sm text-red-400">{error}</p>}
 
           <button
             type="submit"

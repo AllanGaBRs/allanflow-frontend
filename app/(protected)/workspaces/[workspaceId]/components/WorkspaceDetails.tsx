@@ -3,6 +3,7 @@
 import { useWorkspaceDetails } from "../hooks/useWorkspaceDetails";
 import { WorkspaceLayout } from "../../components/WorkspaceLayout";
 import type { WorkspaceDetails as WorkspaceDetailsType } from "../types/workspaceDetails";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 
 type WorkspaceDetailsProps = {
   workspaceId: string;
@@ -20,6 +21,7 @@ export function WorkspaceDetails({
     initialWorkspace,
     initialError
   );
+  useToastMessage(error, { title: "Erro ao carregar workspace" });
   const headerTitle = loading ? "Carregando..." : workspace?.name ?? "Workspace";
 
   return (
@@ -30,11 +32,6 @@ export function WorkspaceDetails({
       headerSubtitle=""
     >
       <section className="flex-1 p-8">
-        {error && (
-          <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
       </section>
     </WorkspaceLayout>
   );

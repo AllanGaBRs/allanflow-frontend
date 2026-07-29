@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, CheckSquare, FileText, Trash2, X } from "lucide-react";
+import { CheckSquare, FileText, Trash2, X } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import type { Client } from "../../clients/types/client";
 import type { Member } from "../../members/types/member";
 import { useTaskChecklists } from "../hooks/useTaskChecklists";
@@ -81,6 +82,7 @@ export function TaskDetailsModal({
     task?.columnId,
     task?.id
   );
+  useToastMessage(error, { title: "Erro na tarefa" });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -129,13 +131,6 @@ export function TaskDetailsModal({
           }
         >
           <div className="flex min-h-0 flex-col p-5">
-            {error && (
-              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                <AlertCircle size={18} />
-                {error}
-              </div>
-            )}
-
             {!isCreating && (
               <div
                 className="mb-4 flex shrink-0 gap-2 border-b border-slate-200"
