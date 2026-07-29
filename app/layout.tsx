@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: "AllanFlow",
-    template: "%s | AllanFlow",
+    template: "",
   },
   description: "Plataforma colaborativa de gerenciamento de tarefas.",
 };

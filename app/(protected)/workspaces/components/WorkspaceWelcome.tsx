@@ -10,14 +10,13 @@ export function WorkspaceWelcome({ totalWorkspaces }: WorkspaceWelcomeProps) {
     <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-5">
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white">
             <Image
               src="/img/AllanFlow.png"
               alt="AllanFlow"
-              fill
-              unoptimized
-              sizes="80px"
-              className="scale-[2.7] object-contain"
+              width={379}
+              height={412}
+              className="h-auto w-12 object-contain"
               priority
             />
           </div>

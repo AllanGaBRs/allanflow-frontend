@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   BriefcaseBusiness,
@@ -92,13 +93,25 @@ export function NavBar({
       }`}
     >
       <div className="flex h-24 items-center justify-center overflow-hidden border-b border-white/10 px-3">
-        <img
-          src="/img/AllanFlow.png"
-          alt="AllanFlow"
-          className={`pointer-events-none block object-contain transition-all duration-300 ${
-            collapsed ? "w-44 max-w-none" : "w-87.5"
-          }`}
-        />
+        {collapsed ? (
+          <Image
+            src="/img/AllanFlow.png"
+            alt="AllanFlow"
+            width={379}
+            height={412}
+            priority
+            className="pointer-events-none h-auto w-12 object-contain"
+          />
+        ) : (
+          <Image
+            src="/img/AllanFlow_FullLogo_NoSubtitle_v2.png"
+            alt="AllanFlow"
+            width={960}
+            height={281}
+            priority
+            className="pointer-events-none h-auto w-48 object-contain"
+          />
+        )}
       </div>
 
       <div className="px-3 py-4">

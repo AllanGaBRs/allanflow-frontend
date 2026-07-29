@@ -5,11 +5,15 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useLogin } from "../hooks/useLogin";
+import { AuthShell } from "../../components/AuthShell";
 import { GoogleOAuthButton } from "../../components/GoogleOAuthButton";
 
 type LoginFormProps = {
   googleOAuthUrl: string;
 };
+
+const inputClassName =
+  "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
 
 export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
   const searchParams = useSearchParams();
@@ -26,22 +30,24 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#020B1F] px-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.04] p-8 shadow-xl">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-white">Login</h1>
-          <p className="mt-2 text-sm text-white/50">
-            Entre para acessar seus workspaces
-          </p>
-        </div>
-
+    <AuthShell
+      title="Entrar na sua conta"
+      description="Acesse seus workspaces, boards e tarefas."
+    >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="mb-2 block text-sm text-white/70">Email</label>
+            <label
+              htmlFor="login-email"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Email
+            </label>
             <input
+              id="login-email"
               type="email"
+              autoComplete="email"
               placeholder="seuemail@email.com"
-              className="w-full rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-blue-500"
+              className={inputClassName}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -49,11 +55,18 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">Senha</label>
+            <label
+              htmlFor="login-password"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Senha
+            </label>
             <input
+              id="login-password"
               type="password"
+              autoComplete="current-password"
               placeholder="Digite sua senha"
-              className="w-full rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-blue-500"
+              className={inputClassName}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -61,7 +74,7 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
             <div className="mt-2 text-right">
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-400 hover:underline"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
               >
                 Esqueci minha senha
               </Link>
@@ -71,16 +84,18 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="mt-2 rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
-        <div className="my-6 flex items-center gap-4 text-white/30">
-          <div className="h-px flex-1 bg-white/10" />
-          <span className="text-xs uppercase tracking-[0.3em]">ou</span>
-          <div className="h-px flex-1 bg-white/10" />
+        <div className="my-6 flex items-center gap-4 text-slate-400">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span className="text-xs font-semibold uppercase tracking-[0.25em]">
+            ou
+          </span>
+          <div className="h-px flex-1 bg-slate-200" />
         </div>
 
         <GoogleOAuthButton
@@ -88,13 +103,15 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
           label="Continuar com Google"
         />
 
-        <p className="mt-6 text-center text-sm text-white/50">
+        <p className="mt-6 text-center text-sm text-slate-500">
           Não tem conta?{" "}
-          <Link href="/register" className="text-blue-400 hover:underline">
+          <Link
+            href="/register"
+            className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+          >
             Criar conta
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
