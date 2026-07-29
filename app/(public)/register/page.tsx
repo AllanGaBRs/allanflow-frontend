@@ -1,5 +1,8 @@
 import { RegisterForm } from "./components/RegisterForm";
+import { getGoogleOAuthUrl } from "../utils/getGoogleOAuthUrl";
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  const googleOAuthUrl = getGoogleOAuthUrl(process.env.API_URL);
+
+  return <RegisterForm googleOAuthUrl={googleOAuthUrl} />;
 }

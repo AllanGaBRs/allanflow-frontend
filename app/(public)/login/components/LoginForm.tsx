@@ -4,8 +4,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
+import { GoogleOAuthButton } from "../../components/GoogleOAuthButton";
 
-export function LoginForm() {
+type LoginFormProps = {
+  googleOAuthUrl: string;
+};
+
+export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") ?? undefined;
   const { login, loading, error } = useLogin(nextPath);
@@ -71,6 +76,17 @@ export function LoginForm() {
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-4 text-white/30">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs uppercase tracking-[0.3em]">ou</span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <GoogleOAuthButton
+          href={googleOAuthUrl}
+          label="Continuar com Google"
+        />
 
         <p className="mt-6 text-center text-sm text-white/50">
           Não tem conta?{" "}
