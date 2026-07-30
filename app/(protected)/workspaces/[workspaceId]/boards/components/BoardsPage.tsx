@@ -19,6 +19,7 @@ import { BoardsToolbar } from "./BoardsToolbar";
 import { TaskDetailsModal } from "./TaskDetailsModal";
 import { TaskDeleteModal } from "./TaskDeleteModal";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type BoardsPageProps = {
   workspaceId: string;
@@ -26,9 +27,15 @@ type BoardsPageProps = {
 };
 
 export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
+
+
+
   const { user } = useUser();
   const { boards, loading, error } = useBoards(workspaceId);
-  const [selectedBoardId, setSelectedBoardId] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const selectedBoardId = searchParams.get("board") ?? "";
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const canManageBoards =
     initialWorkspace.userRole === "OWNER" || initialWorkspace.userRole === "ADMIN";
@@ -129,6 +136,19 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     boardMembersError;
   useToastMessage(boardPageError, { title: "Erro no board" });
 
+  function handleSelectBoard(boardId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("board", boardId);
+
+    router.replace(
+      `/workspaces/${workspaceId}/boards?${params.toString()}`,
+      {
+        scroll: false,
+      }
+    );
+  }
+
   return (
     <WorkspaceLayout
       workspaceId={workspaceId}
@@ -147,7 +167,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
                 selectedBoardId={selectedBoard.id}
                 loading={loading}
                 canManageBoards={canManageBoards}
-                onSelectBoard={setSelectedBoardId}
+                onSelectBoard={handleSelectBoard}
               />
             </div>
           )}
