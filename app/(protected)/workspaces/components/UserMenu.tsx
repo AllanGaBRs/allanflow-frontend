@@ -6,11 +6,23 @@ type Props = {
   email: string;
 };
 
+function getFirstName(email: string) {
+  const localPart = email.split("@")[0] || "";
+  const firstToken = localPart.split(/[._-\s]+/)[0] || localPart;
+
+  if (!firstToken) {
+    return "?";
+  }
+
+  return firstToken.charAt(0).toUpperCase() + firstToken.slice(1);
+}
+
 export function UserMenu({ email }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const initial = email?.charAt(0).toUpperCase() || "?";
+  const firstName = getFirstName(email);
+  const initial = firstName.charAt(0).toUpperCase() || "?";
 
   function toggle() {
     setOpen((prev) => !prev);
@@ -36,6 +48,7 @@ export function UserMenu({ email }: Props) {
     <div className="relative" ref={ref}>
       <button
         onClick={toggle}
+        title={firstName}
         className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white"
       >
         {initial}
@@ -44,7 +57,7 @@ export function UserMenu({ email }: Props) {
       {open && (
         <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 bg-white shadow-lg">
           <div className="border-b px-4 py-3 text-sm text-slate-600">
-            {email}
+            {firstName}
           </div>
 
           <button

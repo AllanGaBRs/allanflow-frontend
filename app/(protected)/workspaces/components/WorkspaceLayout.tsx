@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import { AIAssistant } from "../../components/AIAssistant";
 import { NavBar } from "../../components/NavBar";
 import { WorkspaceHeader } from "./WorkspaceHeader";
 
@@ -42,6 +43,8 @@ export function WorkspaceLayout({
 
         <div className="flex min-w-0 flex-1 overflow-x-hidden">{children}</div>
       </main>
+
+      <AIAssistant />
     </div>
   );
 }

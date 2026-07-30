@@ -19,6 +19,10 @@ const initialForm: ClientForm = {
   company: "",
 };
 
+function toInputValue(value: string | null | undefined) {
+  return typeof value === "string" ? value : "";
+}
+
 function validateClientForm(form: ClientForm) {
   const payload = {
     name: form.name.trim(),
@@ -85,10 +89,10 @@ export function useClients(workspaceId: string) {
 
   function fillForm(client: Client) {
     setForm({
-      name: client.name,
-      email: client.email,
-      phone: client.phone ?? "",
-      company: client.company ?? "",
+      name: toInputValue(client.name),
+      email: toInputValue(client.email),
+      phone: toInputValue(client.phone),
+      company: toInputValue(client.company),
     });
     setError("");
   }
