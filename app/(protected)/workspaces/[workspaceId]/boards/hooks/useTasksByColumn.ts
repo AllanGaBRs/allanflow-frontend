@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createTaskService,
   deleteTaskService,
-  getColumnTasksService,
+  getBoardTasksService,
   getTaskService,
   moveTaskService,
   updateTaskService,
@@ -54,6 +54,21 @@ function taskToForm(task: Task): TaskForm {
     assigneeIds: task.assignees.map((assignee) => assignee.id),
     clientId: task.client?.id ?? "",
   };
+}
+
+function groupTasksByColumn(tasks: Task[]): TasksByColumn {
+  const grouped = tasks.reduce<TasksByColumn>((result, task) => {
+    result[task.columnId] ??= [];
+    result[task.columnId].push(task);
+
+    return result;
+  }, {});
+
+  Object.keys(grouped).forEach((columnId) => {
+    grouped[columnId] = sortTasksByPosition(grouped[columnId]);
+  });
+
+  return grouped;
 }
 
 const initialTaskForm: TaskForm = {
@@ -107,19 +122,9 @@ export function useTasksByColumn(
     setError("");
 
     try {
-      const entries = await Promise.all(
-        columns.map(async (column) => {
-          const tasks = await getColumnTasksService(
-            workspaceId,
-            boardId,
-            column.id
-          );
+      const tasks = await getBoardTasksService(workspaceId, boardId);
 
-          return [column.id, sortTasksByPosition(tasks)] as const;
-        })
-      );
-
-      setTasksByColumn(Object.fromEntries(entries));
+      setTasksByColumn(groupTasksByColumn(tasks));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao buscar tasks");
     } finally {
@@ -127,7 +132,7 @@ export function useTasksByColumn(
         setLoading(false);
       }
     }
-  }, [boardId, columns, workspaceId]);
+  }, [boardId, columns.length, workspaceId]);
 
   async function moveTask(
     taskId: string,
@@ -180,12 +185,12 @@ export function useTasksByColumn(
       ...(sameColumn
         ? {}
         : {
-            [sourceColumnId]: reindexTasks(
-              nextSourceTasks,
-              sourceColumnId,
-              sourceColumn.name
-            ),
-          }),
+          [sourceColumnId]: reindexTasks(
+            nextSourceTasks,
+            sourceColumnId,
+            sourceColumn.name
+          ),
+        }),
       [targetColumnId]: reindexTasks(
         nextTargetTasks,
         targetColumnId,
@@ -387,56 +392,46 @@ export function useTasksByColumn(
   }
 
   useEffect(() => {
-    let active = true;
+  let active = true;
 
-    async function loadInitialTasks() {
-      if (!boardId || columns.length === 0) {
-        if (active) {
-          setTasksByColumn({});
-          setLoading(false);
-        }
-
-        return;
-      }
-
+  async function loadInitialTasks() {
+    if (!boardId || columns.length === 0) {
       if (active) {
-        setLoading(true);
-        setError("");
+        setTasksByColumn({});
+        setLoading(false);
       }
 
-      try {
-        const entries = await Promise.all(
-          columns.map(async (column) => {
-            const tasks = await getColumnTasksService(
-              workspaceId,
-              boardId,
-              column.id
-            );
-
-            return [column.id, sortTasksByPosition(tasks)] as const;
-          })
-        );
-
-        if (active) {
-          setTasksByColumn(Object.fromEntries(entries));
-        }
-      } catch (err: unknown) {
-        if (active) {
-          setError(err instanceof Error ? err.message : "Erro ao buscar tasks");
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
+      return;
     }
 
-    void loadInitialTasks();
+    if (active) {
+      setLoading(true);
+      setError("");
+    }
 
-    return () => {
-      active = false;
-    };
-  }, [boardId, columns, workspaceId]);
+    try {
+      const tasks = await getBoardTasksService(workspaceId, boardId);
+
+      if (active) {
+        setTasksByColumn(groupTasksByColumn(tasks));
+      }
+    } catch (err: unknown) {
+      if (active) {
+        setError(err instanceof Error ? err.message : "Erro ao buscar tasks");
+      }
+    } finally {
+      if (active) {
+        setLoading(false);
+      }
+    }
+  }
+
+  void loadInitialTasks();
+
+  return () => {
+    active = false;
+  };
+}, [boardId, columns.length, workspaceId]);
 
   return {
     tasksByColumn,

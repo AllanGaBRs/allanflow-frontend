@@ -6,6 +6,13 @@ import type {
   TaskUpdatePayload,
 } from "../types/task";
 
+function boardTasksUrl(
+  workspaceId: string,
+  boardId: string
+) {
+  return `/workspaces/${workspaceId}/boards/${boardId}/tasks`;
+}
+
 function columnTasksUrl(
   workspaceId: string,
   boardId: string,
@@ -50,6 +57,17 @@ export async function moveTaskService(
   const { data } = await api.patch<Task>(
     `${columnTasksUrl(workspaceId, boardId, sourceColumnId)}/${taskId}/move`,
     payload
+  );
+
+  return data;
+}
+
+export async function getBoardTasksService(
+  workspaceId: string,
+  boardId: string
+): Promise<Task[]> {
+  const { data } = await api.get<Task[]>(
+    boardTasksUrl(workspaceId, boardId)
   );
 
   return data;
