@@ -183,7 +183,11 @@ export function useTaskComments(
     }
 
     useEffect(() => {
-        void loadComments();
+        const timeoutId = window.setTimeout(() => {
+            void loadComments();
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
     }, [loadComments]);
 
     return {

@@ -22,6 +22,12 @@ const priorityClasses: Record<TaskPriority, string> = {
   HIGH: "border-red-200 bg-red-50 text-red-700",
 };
 
+const priorityAccentClasses: Record<TaskPriority, string> = {
+  LOW: "bg-emerald-400",
+  MEDIUM: "bg-amber-400",
+  HIGH: "bg-red-500",
+};
+
 function formatDueDate(dueDate: string | null) {
   if (!dueDate) {
     return "";
@@ -33,6 +39,26 @@ function formatDueDate(dueDate: string | null) {
   }).format(new Date(dueDate));
 }
 
+function getDueDateTone(dueDate: string | null) {
+  if (!dueDate) {
+    return "text-slate-500";
+  }
+
+  const dueTime = new Date(dueDate).getTime();
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  if (dueTime < now) {
+    return "text-red-600";
+  }
+
+  if (dueTime - now <= oneDay) {
+    return "text-amber-700";
+  }
+
+  return "text-slate-500";
+}
+
 export function TaskCard({
   task,
   dragging = false,
@@ -41,6 +67,7 @@ export function TaskCard({
   onDragEnd,
 }: TaskCardProps) {
   const dueDate = formatDueDate(task.dueDate);
+  const dueDateTone = getDueDateTone(task.dueDate);
   const visibleLabels = task.labels.slice(0, 3);
   const extraLabelsCount = task.labels.length - visibleLabels.length;
   const visibleAssignees = task.assignees.slice(0, 2);
@@ -60,10 +87,14 @@ export function TaskCard({
           onOpen?.();
         }
       }}
-      className={`cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow active:cursor-grabbing ${
+      className={`group relative cursor-grab overflow-hidden rounded-lg border border-slate-200 bg-white p-3 pl-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow active:cursor-grabbing ${
         dragging ? "opacity-50 ring-2 ring-slate-300" : ""
       }`}
     >
+      <span
+        className={`absolute inset-y-0 left-0 w-1 ${priorityAccentClasses[task.priority]}`}
+        aria-hidden="true"
+      />
       <div className="flex items-start justify-between gap-3">
         <h4 className="min-w-0 flex-1 wrap-break-word text-sm font-semibold leading-5 text-slate-950">
           {task.title}
@@ -108,11 +139,11 @@ export function TaskCard({
       )}
 
       {(dueDate || task.client || visibleAssignees.length > 0) && (
-        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-slate-500">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-500">
           {dueDate && (
-            <span className="flex min-w-0 items-center gap-1.5">
+            <span className={`flex min-w-0 items-center gap-1.5 ${dueDateTone}`}>
               <CalendarDays size={14} className="shrink-0" />
-              <span className="truncate" title={dueDate}>
+              <span className="max-w-24 truncate font-medium" title={dueDate}>
                 {dueDate}
               </span>
             </span>
@@ -121,7 +152,7 @@ export function TaskCard({
           {task.client && (
             <span className="flex min-w-0 items-center gap-1.5">
               <Building2 size={14} className="shrink-0" />
-              <span className="truncate" title={task.client.name}>
+              <span className="max-w-32 truncate" title={task.client.name}>
                 {task.client.name}
               </span>
             </span>
@@ -131,18 +162,29 @@ export function TaskCard({
             <span className="flex min-w-0 items-center gap-1.5">
               <UserRound size={14} className="shrink-0" />
               <span
-                className="truncate"
-                title={visibleAssignees
+                className="flex -space-x-1"
+                title={task.assignees
                   .map(
                     (assignee) =>
                       assignee.name || assignee.email || "Usuário"
                   )
                   .join(", ")}
               >
-                {visibleAssignees
-                  .map((assignee) => assignee.name || assignee.email || "Usuário")
-                  .join(", ")}
-                {extraAssigneesCount > 0 ? ` +${extraAssigneesCount}` : ""}
+                {visibleAssignees.map((assignee) => (
+                  <span
+                    key={assignee.id}
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 ring-2 ring-white"
+                  >
+                    {(assignee.name || assignee.email || "U")
+                      .slice(0, 1)
+                      .toUpperCase()}
+                  </span>
+                ))}
+                {extraAssigneesCount > 0 && (
+                  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-semibold text-slate-600 ring-2 ring-white">
+                    +{extraAssigneesCount}
+                  </span>
+                )}
               </span>
             </span>
           )}

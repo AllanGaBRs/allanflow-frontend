@@ -383,7 +383,11 @@ export function useTaskChecklists(
   }
 
   useEffect(() => {
-    void loadChecklists();
+    const timeoutId = window.setTimeout(() => {
+      void loadChecklists();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadChecklists]);
 
   return {
