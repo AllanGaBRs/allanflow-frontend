@@ -13,6 +13,7 @@ type BoardColumnsViewProps = {
   columns: Column[];
   loading: boolean;
   tasksByColumn: TasksByColumn;
+  moveTasksByColumn?: TasksByColumn;
   tasksLoading: boolean;
   movingTask: boolean;
   onMoveTask: (
@@ -39,6 +40,7 @@ export function BoardColumnsView({
   columns,
   loading,
   tasksByColumn,
+  moveTasksByColumn,
   tasksLoading,
   movingTask,
   onMoveTask,
@@ -145,6 +147,20 @@ export function BoardColumnsView({
     return tasks.filter((task) => task.id !== draggedTask?.taskId).length;
   }
 
+  function getDropPositionForTask(
+    tasks: Task[],
+    taskId: string,
+    placeAfter: boolean
+  ) {
+    const taskIndex = tasks.findIndex((task) => task.id === taskId);
+
+    if (taskIndex === -1) {
+      return getFinalDropPosition(tasks);
+    }
+
+    return getDropPosition(tasks, taskIndex, placeAfter);
+  }
+
   function isActiveDropTarget(columnId: string, position: number) {
     return (
       dragOverTarget?.columnId === columnId &&
@@ -198,7 +214,8 @@ export function BoardColumnsView({
           <div className="flex h-full min-h-0 w-max gap-4 pr-4">
             {columns.map((column) => {
               const tasks = tasksByColumn[column.id] ?? [];
-              const finalDropPosition = getFinalDropPosition(tasks);
+              const moveTasks = moveTasksByColumn?.[column.id] ?? tasks;
+              const finalDropPosition = getFinalDropPosition(moveTasks);
               const isDragOver = dragOverTarget?.columnId === column.id;
 
               return (
@@ -258,15 +275,15 @@ export function BoardColumnsView({
 
                   {!tasksLoading && tasks.length > 0 && (
                     <div className="min-h-0 flex-1 overscroll-contain overflow-y-auto pr-1">
-                      {tasks.map((task, index) => {
-                        const dropBeforePosition = getDropPosition(
-                          tasks,
-                          index,
+                      {tasks.map((task) => {
+                        const dropBeforePosition = getDropPositionForTask(
+                          moveTasks,
+                          task.id,
                           false
                         );
-                        const dropAfterPosition = getDropPosition(
-                          tasks,
-                          index,
+                        const dropAfterPosition = getDropPositionForTask(
+                          moveTasks,
+                          task.id,
                           true
                         );
 

@@ -12,14 +12,23 @@ import { useBoards } from "../hooks/useBoards";
 import { useColumns } from "../hooks/useColumns";
 import { useLabels } from "../hooks/useLabels";
 import { useTasksByColumn } from "../hooks/useTasksByColumn";
-import { BoardHeader } from "./BoardHeader";
 import { BoardColumnsView } from "./BoardColumnsView";
 import { BoardsEmptyState } from "./BoardsEmptyState";
 import { BoardsToolbar } from "./BoardsToolbar";
+import {
+  BoardFiltersBar,
+  type AssigneeFilterOption,
+} from "./BoardFiltersBar";
 import { TaskDetailsModal } from "./TaskDetailsModal";
 import { TaskDeleteModal } from "./TaskDeleteModal";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  emptyBoardTaskFilters,
+  filterTasksByColumn,
+  hasActiveBoardTaskFilters,
+  type BoardTaskFilters,
+} from "../utils/taskFilters";
 
 type BoardsPageProps = {
   workspaceId: string;
@@ -27,9 +36,6 @@ type BoardsPageProps = {
 };
 
 export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
-
-
-
   const { user } = useUser();
   const { boards, loading, error } = useBoards(workspaceId);
   const router = useRouter();
@@ -37,6 +43,9 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
 
   const selectedBoardId = searchParams.get("board") ?? "";
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [taskFilters, setTaskFilters] = useState<BoardTaskFilters>(
+    emptyBoardTaskFilters
+  );
   const canManageBoards =
     initialWorkspace.userRole === "OWNER" || initialWorkspace.userRole === "ADMIN";
   const selectedBoard = useMemo(
@@ -117,6 +126,37 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     deleteSelectedTask,
     createTask,
   } = useTasksByColumn(workspaceId, selectedBoard?.id, columns);
+  const filteredTasksByColumn = useMemo(
+    () => filterTasksByColumn(tasksByColumn, taskFilters),
+    [tasksByColumn, taskFilters]
+  );
+  const taskFilterAssignees = useMemo(() => {
+    const assigneeById = new Map<string, AssigneeFilterOption>(
+      Object.values(tasksByColumn)
+        .flat()
+        .flatMap((task) =>
+          task.assignees.map((assignee) => [
+            assignee.id,
+            {
+              userId: assignee.id,
+              userName: assignee.name ?? "",
+              userEmail: assignee.email ?? "",
+            },
+          ] as const)
+        )
+    );
+
+    return Array.from(assigneeById.values()).sort((first, second) =>
+      (first.userName || first.userEmail).localeCompare(
+        second.userName || second.userEmail,
+        "pt-BR"
+      )
+    );
+  }, [tasksByColumn]);
+  const hasActiveTaskFilters = useMemo(
+    () => hasActiveBoardTaskFilters(taskFilters),
+    [taskFilters]
+  );
   const taskDetailsLoading =
     loadingTaskDetails ||
     loadingLabels ||
@@ -149,6 +189,16 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     );
   }
 
+  function updateTaskFilter<K extends keyof BoardTaskFilters>(
+    field: K,
+    value: BoardTaskFilters[K]
+  ) {
+    setTaskFilters((currentFilters) => ({
+      ...currentFilters,
+      [field]: value,
+    }));
+  }
+
   return (
     <WorkspaceLayout
       workspaceId={workspaceId}
@@ -159,8 +209,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
       <section className="h-[calc(100dvh-4rem)] min-h-0 min-w-0 flex-1 overflow-hidden px-6 py-6 lg:px-8">
         <div className="flex h-full min-h-0 min-w-0 max-w-full flex-col gap-5 overflow-hidden">
           {selectedBoard && (
-            <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
-              <BoardHeader board={selectedBoard} />
+            <div className="flex min-w-0 border-b border-slate-200 pb-4">
               <BoardsToolbar
                 workspaceId={workspaceId}
                 boards={boards}
@@ -168,6 +217,18 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
                 loading={loading}
                 canManageBoards={canManageBoards}
                 onSelectBoard={handleSelectBoard}
+                filtersSlot={
+                  <BoardFiltersBar
+                    filters={taskFilters}
+                    labels={labels}
+                    clients={clients}
+                    members={taskFilterAssignees}
+                    disabled={loadingTasks}
+                    hasActiveFilters={hasActiveTaskFilters}
+                    onChange={updateTaskFilter}
+                    onClear={() => setTaskFilters(emptyBoardTaskFilters)}
+                  />
+                }
               />
             </div>
           )}
@@ -198,7 +259,8 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
             <BoardColumnsView
               columns={columns}
               loading={loadingColumns}
-              tasksByColumn={tasksByColumn}
+              tasksByColumn={filteredTasksByColumn}
+              moveTasksByColumn={tasksByColumn}
               tasksLoading={loadingTasks}
               movingTask={movingTask}
               onMoveTask={moveTask}
