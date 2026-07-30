@@ -34,7 +34,7 @@ function validateClientForm(form: ClientForm) {
     };
   }
 
-  if (!payload.email.includes("@")) {
+  if (payload.email && !payload.email.includes("@")) {
     return {
       error: "Informe um email válido.",
       payload: null,

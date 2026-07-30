@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircle, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import type { Checklist, ChecklistItem } from "../types/checklist";
 
 type TaskChecklistDeleteModalProps =
@@ -23,6 +24,13 @@ type TaskChecklistDeleteModalProps =
     };
 
 export function TaskChecklistDeleteModal(props: TaskChecklistDeleteModalProps) {
+  useToastMessage(props.error, {
+    title:
+      props.type === "checklist"
+        ? "Erro ao excluir checklist"
+        : "Erro ao excluir item",
+  });
+
   async function handleConfirm() {
     const deleted = await props.onConfirm();
 
@@ -80,13 +88,6 @@ export function TaskChecklistDeleteModal(props: TaskChecklistDeleteModalProps) {
             <X size={18} />
           </button>
         </div>
-
-        {props.error && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            <AlertCircle size={18} className="shrink-0" />
-            {props.error}
-          </div>
-        )}
 
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {description}{" "}

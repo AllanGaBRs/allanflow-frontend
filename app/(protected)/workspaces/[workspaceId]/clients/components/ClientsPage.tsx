@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { BriefcaseBusiness, Plus, X } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useClients } from "../hooks/useClients";
 import { ClientCard } from "./ClientCard";
@@ -14,6 +15,51 @@ type ClientsPageProps = {
   workspaceId: string;
   initialWorkspace: WorkspaceDetails;
 };
+
+function getClientErrorToastConfig(error: string) {
+  if (
+    error === "Informe um email válido." ||
+    error === "O nome do cliente deve ter pelo menos 2 caracteres."
+  ) {
+    return {
+      title: "Validação do cliente",
+      variant: "warning" as const,
+    };
+  }
+
+  if (error === "Erro ao criar cliente") {
+    return {
+      title: "Erro ao criar cliente",
+      variant: "error" as const,
+    };
+  }
+
+  if (error === "Erro ao atualizar cliente") {
+    return {
+      title: "Erro ao atualizar cliente",
+      variant: "error" as const,
+    };
+  }
+
+  if (error === "Erro ao excluir cliente") {
+    return {
+      title: "Erro ao excluir cliente",
+      variant: "error" as const,
+    };
+  }
+
+  if (error === "Erro ao buscar cliente" || error === "Erro ao buscar clientes") {
+    return {
+      title: "Erro ao buscar clientes",
+      variant: "error" as const,
+    };
+  }
+
+  return {
+    title: "Erro nos clientes",
+    variant: "error" as const,
+  };
+}
 
 export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -32,6 +78,8 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
     updateClient,
     deleteClient,
   } = useClients(workspaceId);
+  const clientErrorToast = getClientErrorToastConfig(error);
+  useToastMessage(error, clientErrorToast);
 
   const closeCreateModal = useCallback(() => {
     if (saving) {
@@ -137,12 +185,6 @@ export function ClientsPage({ workspaceId, initialWorkspace }: ClientsPageProps)
               Novo cliente
             </button>
           </header>
-
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
 
           {loading && (
             <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">

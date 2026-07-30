@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useUser } from "../../../../hooks/useUser";
 import { useClients } from "../../clients/hooks/useClients";
 import { useMembers } from "../../members/hooks/useMembers";
@@ -127,6 +127,7 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
     clientsError ||
     membersError ||
     boardMembersError;
+  useToastMessage(boardPageError, { title: "Erro no board" });
 
   return (
     <WorkspaceLayout
@@ -148,13 +149,6 @@ export function BoardsPage({ workspaceId, initialWorkspace }: BoardsPageProps) {
                 canManageBoards={canManageBoards}
                 onSelectBoard={setSelectedBoardId}
               />
-            </div>
-          )}
-
-          {!loadingBoardData && boardPageError && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <AlertCircle size={18} />
-              {boardPageError}
             </div>
           )}
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { usePasswordReset } from "../hooks/usePasswordReset";
 
 const inputClassName =
@@ -22,6 +23,11 @@ export function PasswordResetForm() {
   const [newPassword, setNewPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [validationError, setValidationError] = useState("");
+  useToastMessage(validationError, {
+    variant: "warning",
+    title: "Validação",
+  });
+  useToastMessage(error, { title: "Erro na recuperação" });
 
   async function handleRequestSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -39,8 +45,6 @@ export function PasswordResetForm() {
 
     await resetPassword(code, newPassword);
   }
-
-  const visibleError = validationError || error;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#020B1F] px-4 py-8">
@@ -71,12 +75,6 @@ export function PasswordResetForm() {
                   autoFocus
                 />
               </div>
-
-              {visibleError && (
-                <p role="alert" className="text-sm text-red-400">
-                  {visibleError}
-                </p>
-              )}
 
               <button
                 type="submit"
@@ -158,12 +156,6 @@ export function PasswordResetForm() {
                   required
                 />
               </div>
-
-              {visibleError && (
-                <p role="alert" className="text-sm text-red-400">
-                  {visibleError}
-                </p>
-              )}
 
               <button
                 type="submit"

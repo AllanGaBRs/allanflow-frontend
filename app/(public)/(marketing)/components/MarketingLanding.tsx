@@ -206,8 +206,8 @@ export function MarketingLanding() {
         >
           <SectionTitle
             eyebrow="Recursos"
-            title="Poucas seções, conteúdo claro e foco no produto."
-            description="A landing foi enxugada para comunicar o essencial sem poluição visual. O visitante entende o valor do AllanFlow rapidamente."
+            title="Tudo que sua equipe precisa para acompanhar o trabalho."
+            description="Organize tarefas em boards, conecte clientes aos workspaces e mantenha comentários, checklists e responsáveis sempre no contexto certo."
           />
 
           <div className="mt-8 grid gap-5 lg:grid-cols-3">
@@ -224,7 +224,7 @@ export function MarketingLanding() {
           <SectionTitle
             eyebrow="Como funciona"
             title="Entrar e começar leva poucos passos."
-            description="A sequência abaixo mostra o caminho mais curto para usar o AllanFlow com a equipe."
+            description="Crie um workspace, estruture os boards por fluxo de trabalho e convide as pessoas certas para colaborar com clareza."
           />
 
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -253,7 +253,7 @@ export function MarketingLanding() {
               <SectionTitle
                 eyebrow="Segurança"
                 title="O básico bem feito: acesso, função e isolamento."
-                description="Sem exagero técnico, a landing reforça os pontos que passam confiança para equipes reais."
+                description="Cada workspace mantém seus dados separados, com autenticação, recuperação de senha e permissões por função para controlar quem pode gerenciar cada área."
               />
             </div>
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { AlertCircle, LayoutDashboard } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
 import { useDashboard } from "../hooks/useDashboard";
 import { DashboardLoading } from "./DashboardLoading";
 import { DashboardSummaryCards } from "./DashboardSummaryCards";
 import { TasksByPriorityCard } from "./TasksByPriorityCard";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 
 type WorkspaceDashboardPageProps = {
   workspaceId: string;
@@ -22,6 +23,7 @@ export function WorkspaceDashboardPage({
   const { dashboard, loading, error, loadDashboard } =
     useDashboard(workspaceId);
   const pageError = initialError || error;
+  useToastMessage(pageError, { title: "Erro no dashboard" });
 
   return (
     <WorkspaceLayout
@@ -45,26 +47,14 @@ export function WorkspaceDashboardPage({
             </div>
           </header>
 
-          {pageError && (
-            <div
-              className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between"
-              role="alert"
+          {pageError && !initialError && (
+            <button
+              type="button"
+              onClick={() => void loadDashboard()}
+              className="self-start rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-100"
             >
-              <div className="flex items-center gap-2">
-                <AlertCircle size={18} aria-hidden="true" />
-                <span>{pageError}</span>
-              </div>
-
-              {!initialError && (
-                <button
-                  type="button"
-                  onClick={() => void loadDashboard()}
-                  className="font-semibold text-red-700 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-red-200"
-                >
-                  Tentar novamente
-                </button>
-              )}
-            </div>
+              Tentar novamente
+            </button>
           )}
 
           {loading && <DashboardLoading />}

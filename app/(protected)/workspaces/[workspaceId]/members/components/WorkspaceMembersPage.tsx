@@ -1,6 +1,7 @@
 "use client";
 
 import { Users } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useWorkspaceDetails } from "../../hooks/useWorkspaceDetails";
 import { MembersSection } from "./MembersSection";
@@ -22,6 +23,7 @@ export function WorkspaceMembersPage({
     initialWorkspace,
     initialError
   );
+  useToastMessage(error, { title: "Erro ao carregar workspace" });
   const headerTitle = loading ? "Carregando..." : workspace?.name ?? "Workspace";
 
   return (
@@ -52,12 +54,6 @@ export function WorkspaceMembersPage({
             </div>
           </div>
         </header>
-
-        {error && (
-          <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
 
         <MembersSection workspaceId={workspaceId} />
       </section>

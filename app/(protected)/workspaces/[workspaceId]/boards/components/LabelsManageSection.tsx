@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useLabels } from "../hooks/useLabels";
 import { LabelBadge } from "./LabelBadge";
 import { LabelDeleteModal } from "./LabelDeleteModal";
@@ -29,6 +30,7 @@ export function LabelsManageSection({
     updateLabel,
     deleteLabel,
   } = useLabels(workspaceId, boardId);
+  useToastMessage(error, { title: "Erro ao gerenciar labels" });
 
   return (
     <div>
@@ -50,12 +52,6 @@ export function LabelsManageSection({
           Nova label
         </button>
       </div>
-
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       {loading && (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
