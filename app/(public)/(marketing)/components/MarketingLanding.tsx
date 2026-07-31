@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 
 const navigation = [
   { label: "Início", href: "#inicio" },
@@ -100,9 +101,12 @@ export function MarketingLanding() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 sm:px-8 lg:px-10 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center justify-between gap-4">
             <Link href="#inicio" className="inline-flex items-center">
-              <img
+              <Image
                 src="/img/AllanFlow_FullLogo.png"
                 alt="AllanFlow"
+                width={960}
+                height={281}
+                priority
                 className="block h-auto w-70 max-w-none object-contain"
               />
             </Link>
@@ -312,9 +316,11 @@ export function MarketingLanding() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 sm:px-8 lg:px-10 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="max-w-xl">
-            <img
+            <Image
               src="/img/AllanFlow_FullLogo.png"
               alt="AllanFlow"
+              width={960}
+              height={281}
               className="block h-auto w-60 max-w-none object-contain"
             />
             <p className="mt-3 text-sm leading-6 text-slate-600">
