@@ -18,6 +18,7 @@ type JwtPayload = {
 
 type AuthMeResponse = {
   id?: string;
+  name?: string;
   email?: string;
   authorities?: string[];
 };
@@ -40,6 +41,7 @@ export async function GET() {
     return jsonResponse({
       ...res.data,
       id: decoded.userId,
+      name: res.data.name,
       email: res.data.email || decoded.sub,
       authorities:
         res.data.authorities ||

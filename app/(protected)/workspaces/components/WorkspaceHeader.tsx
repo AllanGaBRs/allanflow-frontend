@@ -24,7 +24,7 @@ export function WorkspaceHeader({
       {loading ? (
         <div className="h-9 w-9 rounded-full bg-slate-200" />
       ) : (
-        <UserMenu email={user?.email || "?"} />
+        <UserMenu name={user?.name} email={user?.email || "?"} />
       )}
     </header>
   );
