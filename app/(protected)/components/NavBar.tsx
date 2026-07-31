@@ -17,6 +17,7 @@ import {
 type NavBarProps = {
   collapsed: boolean;
   onToggle: () => void;
+  animated?: boolean;
   variant?: "default" | "workspaces";
   workspaceId?: string;
   workspaceRole?: "OWNER" | "ADMIN" | "MEMBER";
@@ -25,6 +26,7 @@ type NavBarProps = {
 export function NavBar({
   collapsed,
   onToggle,
+  animated = true,
   variant = "default",
   workspaceId,
   workspaceRole,
@@ -66,17 +68,17 @@ export function NavBar({
   const workspaceMenuItems =
     workspaceId && canManageMembers
       ? [
-          defaultMenuItems[0],
-          defaultMenuItems[2],
-          defaultMenuItems[3],
-          defaultMenuItems[4],
-          {
-            label: "Membros",
-            href: `/workspaces/${workspaceId}/members`,
-            icon: Users,
-          },
-          defaultMenuItems[5],
-        ]
+        defaultMenuItems[0],
+        defaultMenuItems[2],
+        defaultMenuItems[3],
+        defaultMenuItems[4],
+        {
+          label: "Membros",
+          href: `/workspaces/${workspaceId}/members`,
+          icon: Users,
+        },
+        defaultMenuItems[5],
+      ]
       : workspaceId
         ? [defaultMenuItems[2], defaultMenuItems[3], defaultMenuItems[4]]
         : defaultMenuItems;
@@ -88,9 +90,8 @@ export function NavBar({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-white/10 bg-[#1F2A3D] text-white transition-all duration-300 ${
-        collapsed ? "w-20" : "w-64"
-      }`}
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-white/10 bg-[#1F2A3D] text-white ${animated ? "transition-[width] duration-300" : ""
+        } ${collapsed ? "w-20" : "w-64"}`}
     >
       <div className="flex h-24 items-center justify-center overflow-hidden border-b border-white/10 px-3">
         {collapsed ? (
