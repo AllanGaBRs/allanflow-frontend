@@ -67,11 +67,15 @@ export function backendErrorResponse(
 ) {
   logBackendError(error);
 
-  const status = isBackendUnavailable(error) ? 401 : getBackendErrorStatus(error);
+  const backendUnavailable = isBackendUnavailable(error);
+  const status = backendUnavailable
+    ? 503
+    : getBackendErrorStatus(error);
+
   const response = NextResponse.json(
     {
-      error: isBackendUnavailable(error)
-        ? "Sessão encerrada. Faça login novamente."
+      error: backendUnavailable
+        ? "Serviço temporariamente indisponível. Tente novamente mais tarde."
         : getBackendErrorMessage(error, options),
     },
     {
