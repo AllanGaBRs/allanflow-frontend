@@ -3,6 +3,7 @@
 import {
   ReactNode,
   useLayoutEffect,
+  useRef,
   useState,
 } from "react";
 import { AIAssistant } from "../../components/AIAssistant";
@@ -31,16 +32,26 @@ export function WorkspaceLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(false);
 
+  const animationFrameRef = useRef<number | null>(null);
+
   useLayoutEffect(() => {
     const savedValue = localStorage.getItem(SIDEBAR_STORAGE_KEY);
 
-    setCollapsed(savedValue === "true");
+    const restoreFrameId = requestAnimationFrame(() => {
+      setCollapsed(savedValue === "true");
 
-    const frameId = requestAnimationFrame(() => {
-      setAnimationsEnabled(true);
+      animationFrameRef.current = requestAnimationFrame(() => {
+        setAnimationsEnabled(true);
+      });
     });
 
-    return () => cancelAnimationFrame(frameId);
+    return () => {
+      cancelAnimationFrame(restoreFrameId);
+
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   function handleToggle() {

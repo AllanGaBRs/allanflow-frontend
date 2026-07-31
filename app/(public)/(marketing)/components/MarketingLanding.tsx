@@ -103,7 +103,7 @@ export function MarketingLanding() {
               <img
                 src="/img/AllanFlow_FullLogo.png"
                 alt="AllanFlow"
-                className="block h-auto w-[280px] max-w-none object-contain"
+                className="block h-auto w-70 max-w-none object-contain"
               />
             </Link>
 
@@ -274,7 +274,7 @@ export function MarketingLanding() {
         </section>
 
         <section className="mx-auto max-w-7xl px-6 pb-24 sm:px-8 lg:px-10">
-          <div className="rounded-[2rem] border border-slate-200 bg-slate-950 px-6 py-10 text-white sm:px-8">
+          <div className="rounded-4xl border border-slate-200 bg-slate-950 px-6 py-10 text-white sm:px-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-300">
@@ -315,7 +315,7 @@ export function MarketingLanding() {
             <img
               src="/img/AllanFlow_FullLogo.png"
               alt="AllanFlow"
-              className="block h-auto w-[240px] max-w-none object-contain"
+              className="block h-auto w-60 max-w-none object-contain"
             />
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Plataforma colaborativa de gerenciamento de tarefas para equipes
