@@ -6,11 +6,19 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { parseJsonBody } from "@/app/api/_utils/parseJsonBody";
 import { jsonResponse } from "@/app/api/_utils/responses";
 
 export async function PATCH(req: Request) {
+  const parsed = await parseJsonBody<Record<string, unknown>>(req);
+
+  if (!parsed.success) {
+    return parsed.response;
+  }
+
+  const body = parsed.data;
+
   try {
-    const body = await req.json();
     const headers = await getAuthorizationHeader();
 
     if (!headers) {

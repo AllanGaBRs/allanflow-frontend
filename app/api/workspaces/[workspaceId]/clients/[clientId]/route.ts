@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { getAuthorizationHeader, unauthorizedResponse } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { parseJsonBody } from "@/app/api/_utils/parseJsonBody";
 import { jsonResponse } from "@/app/api/_utils/responses";
 import { apiServer } from "@/app/api/api-server";
 
@@ -43,7 +44,13 @@ export async function GET(req: Request, { params }: Params) {
 
 export async function PUT(req: Request, { params }: Params) {
     const { workspaceId, clientId } = await params;
-    const body = await req.json();
+    const parsed = await parseJsonBody<Record<string, unknown>>(req);
+
+    if (!parsed.success) {
+        return parsed.response;
+    }
+
+    const body = parsed.data;
 
     try {
         const headers = await getAuthorizationHeader();

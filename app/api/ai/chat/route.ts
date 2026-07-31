@@ -6,6 +6,7 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { parseJsonBody } from "@/app/api/_utils/parseJsonBody";
 import { jsonResponse } from "@/app/api/_utils/responses";
 
 type AIChatRequest = {
@@ -17,7 +18,13 @@ type AIChatResponse = {
 };
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as Partial<AIChatRequest>;
+  const parsed = await parseJsonBody<Partial<AIChatRequest>>(req);
+
+  if (!parsed.success) {
+    return parsed.response;
+  }
+
+  const body = parsed.data;
 
   try {
     const headers = await getAuthorizationHeader();

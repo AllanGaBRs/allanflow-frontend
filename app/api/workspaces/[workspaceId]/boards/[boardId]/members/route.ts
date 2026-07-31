@@ -6,6 +6,7 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { parseJsonBody } from "@/app/api/_utils/parseJsonBody";
 import { createdResponse, jsonResponse } from "@/app/api/_utils/responses";
 
 type Params = {
@@ -46,7 +47,13 @@ export async function GET(req: Request, { params }: Params) {
 
 export async function POST(req: Request, { params }: Params) {
   const { workspaceId, boardId } = await params;
-  const body = await req.json();
+  const parsed = await parseJsonBody<Record<string, unknown>>(req);
+
+  if (!parsed.success) {
+    return parsed.response;
+  }
+
+  const body = parsed.data;
 
   try {
     const headers = await getAuthorizationHeader();

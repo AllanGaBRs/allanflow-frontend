@@ -6,6 +6,7 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { parseJsonBody } from "@/app/api/_utils/parseJsonBody";
 import {
   createdResponse,
   jsonResponse,
@@ -16,6 +17,10 @@ type WorkspaceResponse = {
   id: string;
   name: string;
   userRole?: "OWNER" | "ADMIN" | "MEMBER";
+};
+
+type CreateWorkspaceDTO = {
+  name: string;
 };
 
 export async function GET() {
@@ -44,7 +49,13 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { name } = await req.json();
+  const parsed = await parseJsonBody<CreateWorkspaceDTO>(req);
+
+  if (!parsed.success) {
+    return parsed.response;
+  }
+
+  const { name } = parsed.data;
 
   try {
     const headers = await getAuthorizationHeader();

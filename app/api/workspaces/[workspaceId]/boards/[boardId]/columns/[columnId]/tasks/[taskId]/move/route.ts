@@ -5,6 +5,7 @@ import {
   unauthorizedResponse,
 } from "@/app/api/_utils/auth";
 import { backendErrorResponse } from "@/app/api/_utils/errors";
+import { parseJsonBody } from "@/app/api/_utils/parseJsonBody";
 import { jsonResponse } from "@/app/api/_utils/responses";
 import { apiServer } from "@/app/api/api-server";
 
@@ -19,7 +20,13 @@ type Params = {
 
 export async function PATCH(req: Request, { params }: Params) {
   const { workspaceId, boardId, columnId, taskId } = await params;
-  const body = await req.json();
+  const parsed = await parseJsonBody<Record<string, unknown>>(req);
+
+  if (!parsed.success) {
+    return parsed.response;
+  }
+
+  const body = parsed.data;
 
   try {
     const headers = await getAuthorizationHeader();
