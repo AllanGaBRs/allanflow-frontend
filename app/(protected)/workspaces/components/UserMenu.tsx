@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { KeyRound, LogOut } from "lucide-react";
+import { ChangePasswordModal } from "../../account/components/ChangePasswordModal";
 
 type Props = {
   email: string;
@@ -19,6 +21,7 @@ function getFirstName(email: string) {
 
 export function UserMenu({ email }: Props) {
   const [open, setOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   const firstName = getFirstName(email);
@@ -31,6 +34,11 @@ export function UserMenu({ email }: Props) {
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  }
+
+  function openChangePassword() {
+    setOpen(false);
+    setChangePasswordOpen(true);
   }
 
   useEffect(() => {
@@ -61,12 +69,27 @@ export function UserMenu({ email }: Props) {
           </div>
 
           <button
-            onClick={handleLogout}
-            className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50"
+            type="button"
+            onClick={openChangePassword}
+            className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
           >
-            Sair
+            <KeyRound size={16} />
+            <span>Mudar senha</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50"
+          >
+            <LogOut size={16} />
+            <span>Sair</span>
           </button>
         </div>
+      )}
+
+      {changePasswordOpen && (
+        <ChangePasswordModal onClose={() => setChangePasswordOpen(false)} />
       )}
     </div>
   );

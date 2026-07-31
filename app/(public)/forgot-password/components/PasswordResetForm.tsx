@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { PasswordInput } from "@/components/forms/PasswordInput";
 import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { usePasswordReset } from "../hooks/usePasswordReset";
 
@@ -124,12 +125,12 @@ export function PasswordResetForm() {
                 <label htmlFor="new-password" className="mb-2 block text-sm text-white/70">
                   Nova senha
                 </label>
-                <input
+                <PasswordInput
                   id="new-password"
-                  type="password"
                   autoComplete="new-password"
                   placeholder="Mínimo de 6 caracteres"
                   className={inputClassName}
+                  iconClassName="text-white/40 hover:bg-white/10 hover:text-white/80"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
                   minLength={6}
@@ -144,12 +145,12 @@ export function PasswordResetForm() {
                 >
                   Confirme a nova senha
                 </label>
-                <input
+                <PasswordInput
                   id="password-confirmation"
-                  type="password"
                   autoComplete="new-password"
                   placeholder="Digite a senha novamente"
                   className={inputClassName}
+                  iconClassName="text-white/40 hover:bg-white/10 hover:text-white/80"
                   value={passwordConfirmation}
                   onChange={(event) => setPasswordConfirmation(event.target.value)}
                   minLength={6}

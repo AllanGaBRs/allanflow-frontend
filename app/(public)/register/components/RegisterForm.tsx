@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { PasswordInput } from "@/components/forms/PasswordInput";
 import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useRegister } from "../hooks/useRegister";
 import { AuthShell } from "../../components/AuthShell";
@@ -78,9 +79,8 @@ export function RegisterForm({ googleOAuthUrl }: RegisterFormProps) {
             >
               Senha
             </label>
-            <input
+            <PasswordInput
               id="register-password"
-              type="password"
               autoComplete="new-password"
               placeholder="Digite sua senha"
               className={inputClassName}

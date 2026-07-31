@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { PasswordInput } from "@/components/forms/PasswordInput";
 import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useLogin } from "../hooks/useLogin";
 import { AuthShell } from "../../components/AuthShell";
@@ -61,9 +62,8 @@ export function LoginForm({ googleOAuthUrl }: LoginFormProps) {
             >
               Senha
             </label>
-            <input
+            <PasswordInput
               id="login-password"
-              type="password"
               autoComplete="current-password"
               placeholder="Digite sua senha"
               className={inputClassName}
