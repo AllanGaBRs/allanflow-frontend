@@ -1,6 +1,10 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import {
+  ReactNode,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { AIAssistant } from "../../components/AIAssistant";
 import { NavBar } from "../../components/NavBar";
 import { WorkspaceHeader } from "./WorkspaceHeader";
@@ -14,6 +18,8 @@ type Props = {
   headerSubtitle?: string;
 };
 
+const SIDEBAR_STORAGE_KEY = "allanflow-sidebar-collapsed";
+
 export function WorkspaceLayout({
   children,
   navVariant = "default",
@@ -23,6 +29,32 @@ export function WorkspaceLayout({
   headerSubtitle,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
+  const [animationsEnabled, setAnimationsEnabled] = useState(false);
+
+  useLayoutEffect(() => {
+    const savedValue = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+
+    setCollapsed(savedValue === "true");
+
+    const frameId = requestAnimationFrame(() => {
+      setAnimationsEnabled(true);
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  function handleToggle() {
+    setCollapsed((previousValue) => {
+      const nextValue = !previousValue;
+
+      localStorage.setItem(
+        SIDEBAR_STORAGE_KEY,
+        String(nextValue)
+      );
+
+      return nextValue;
+    });
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900">
@@ -31,17 +63,23 @@ export function WorkspaceLayout({
         variant={navVariant}
         workspaceId={workspaceId}
         workspaceRole={workspaceRole}
-        onToggle={() => setCollapsed((prev) => !prev)}
+        onToggle={handleToggle}
+        animated={animationsEnabled}
       />
 
       <main
-        className={`flex min-h-screen min-w-0 flex-col overflow-x-hidden transition-all duration-300 ${
-          collapsed ? "pl-20" : "pl-64"
-        }`}
+        className={`flex min-h-screen min-w-0 flex-col overflow-x-hidden ${
+          animationsEnabled ? "transition-[padding] duration-300" : ""
+        } ${collapsed ? "pl-20" : "pl-64"}`}
       >
-        <WorkspaceHeader title={headerTitle} subtitle={headerSubtitle} />
+        <WorkspaceHeader
+          title={headerTitle}
+          subtitle={headerSubtitle}
+        />
 
-        <div className="flex min-w-0 flex-1 overflow-x-hidden">{children}</div>
+        <div className="flex min-w-0 flex-1 overflow-x-hidden">
+          {children}
+        </div>
       </main>
 
       <AIAssistant />
