@@ -5,6 +5,7 @@ import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Bot, Sparkles, Send, X } from "lucide-react";
 import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useAIAssistant } from "../hooks/useAIAssistant";
+import ReactMarkdown from "react-markdown";
 
 function getMessageStyles(role: "user" | "assistant") {
   if (role === "user") {
@@ -139,7 +140,41 @@ export function AIAssistant() {
                           message.role
                         )}`}
                       >
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        {message.role === "assistant" ? (
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => (
+                                <p className="mb-2 break-words [overflow-wrap:anywhere] last:mb-0">
+                                  {children}
+                                </p>
+                              ),
+                              ul: ({ children }) => (
+                                <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">
+                                  {children}
+                                </ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="mb-2 list-decimal space-y-1 pl-5 last:mb-0">
+                                  {children}
+                                </ol>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="font-semibold text-slate-950">
+                                  {children}
+                                </strong>
+                              ),
+                              code: ({ children }) => (
+                                <code className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] rounded bg-slate-200 px-1 py-0.5 font-mono text-xs">
+                                  {children}
+                                </code>
+                              ),
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <p className="whitespace-pre-wrap">{message.content}</p>
+                        )}
                       </div>
                     ))}
 
