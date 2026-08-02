@@ -7,31 +7,16 @@ Este repositório contém o frontend da aplicação AllanFlow e atua como a cama
 A aplicação organiza a navegação pública, o fluxo de autenticação e toda a experiência operacional do produto. O frontend consome o backend por meio de uma camada BFF em `app/api`, mantendo a comunicação com a API centralizada e protegendo a navegação com cookies de sessão.
 
 ## Funcionalidades
+
 - Landing page pública de apresentação do produto.
-- Cadastro de conta.
-- Login com email e senha.
-- Login com Google OAuth.
-- Recuperação de senha por código enviado ao email.
-- Redefinição de senha.
-- Aceite de convites para workspace por código.
-- Dashboard de workspaces.
-- Criação, atualização e exclusão de workspaces.
-- Gerenciamento de boards por workspace.
-- Criação, atualização, exclusão e reordenação de colunas.
-- Criação, atualização, exclusão e movimentação de tarefas entre colunas.
-- Drag and drop de tarefas no board.
-- Filtros de tarefas por texto, prioridade, responsável, label e cliente.
-- Visualização detalhada de tarefas com prioridade, prazo, labels, responsáveis e cliente.
-- Comentários em tarefas.
-- Checklists e itens de checklist em tarefas.
-- Gerenciamento de labels por board.
-- Gerenciamento de clientes por workspace.
-- Gerenciamento de membros do workspace.
-- Convite de membros por email e definição de papel.
-- Gerenciamento de membros do board.
+- Autenticação completa com email/senha e Google OAuth.
+- Recuperação, redefinição e alteração de senha.
+- Gerenciamento de workspaces, boards, membros e permissões.
+- Sistema Kanban com criação, movimentação e organização de tarefas.
+- Filtros, labels, clientes, comentários e checklists.
 - Dashboard com indicadores do workspace.
-- Alteração de senha da conta.
-- Assistente de IA dentro da interface.
+- Convites de usuários por email.
+- Assistente de IA integrado à interface.
 
 ## Arquitetura
 O projeto usa **Next.js App Router** com route groups para separar a experiência pública da área autenticada.
@@ -174,3 +159,5 @@ Estrutura resumida das principais pastas:
 
 ## Autor
 AllanGaBRs
+
+[LinkedIn](https://linkedin.com/in/allan-gabriel-moreira-da-silva-9090a9271)
