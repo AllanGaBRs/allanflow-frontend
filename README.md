@@ -1,160 +1,176 @@
-# AllanFlow Backend
-API backend da plataforma AllanFlow, construída com Spring Boot para autenticação, gestão de workspaces, boards, tarefas e integrações externas da aplicação.
+# AllanFlow Frontend
+Frontend da plataforma AllanFlow, desenvolvido com Next.js para centralizar workspaces, boards Kanban, tarefas e colaboração em uma interface web moderna.
 
 ## Sobre o projeto
-Este repositório contém a camada backend do sistema e concentra as regras de negócio, validações, autorização e persistência dos dados.
+Este repositório contém o frontend da aplicação AllanFlow e atua como a camada de interface entre o usuário e o backend da plataforma.
 
-A API atende o frontend web da plataforma e expõe endpoints para autenticação, usuários, workspaces, boards, colunas, tarefas, labels, comentários, clientes, convites, dashboard e assistente de IA. Além disso, integra serviços externos como Google OAuth2, Resend para envio de e-mails e n8n para processamento do assistente de IA.
+A aplicação organiza a navegação pública, o fluxo de autenticação e toda a experiência operacional do produto. O frontend consome o backend por meio de uma camada BFF em `app/api`, mantendo a comunicação com a API centralizada e protegendo a navegação com cookies de sessão.
 
 ## Funcionalidades
-- Gerenciamento de workspaces, boards, colunas e tarefas.
-- Controle de membros e permissões por workspace e board.
-- Sistema Kanban com movimentação e organização de tarefas.
-- Gestão de labels, clientes, comentários e checklists.
+- Landing page pública de apresentação do produto.
+- Cadastro de conta.
+- Login com email e senha.
+- Login com Google OAuth.
+- Recuperação de senha por código enviado ao email.
+- Redefinição de senha.
+- Aceite de convites para workspace por código.
+- Dashboard de workspaces.
+- Criação, atualização e exclusão de workspaces.
+- Gerenciamento de boards por workspace.
+- Criação, atualização, exclusão e reordenação de colunas.
+- Criação, atualização, exclusão e movimentação de tarefas entre colunas.
+- Drag and drop de tarefas no board.
+- Filtros de tarefas por texto, prioridade, responsável, label e cliente.
+- Visualização detalhada de tarefas com prioridade, prazo, labels, responsáveis e cliente.
+- Comentários em tarefas.
+- Checklists e itens de checklist em tarefas.
+- Gerenciamento de labels por board.
+- Gerenciamento de clientes por workspace.
+- Gerenciamento de membros do workspace.
+- Convite de membros por email e definição de papel.
+- Gerenciamento de membros do board.
+- Dashboard com indicadores do workspace.
+- Alteração de senha da conta.
+- Assistente de IA dentro da interface.
 
 ## Arquitetura
-O backend é organizado por domínios de negócio, com controllers, services, repositories, models, DTOs e mappers por módulo. O projeto segue uma organização modular baseada em domínio, mantendo responsabilidades separadas e facilitando evolução da aplicação.
-
-Camadas principais:
-- `controller`: expõe a API HTTP.
-- `service`: concentra regras de negócio.
-- `repository`: acesso a dados com Spring Data JPA.
-- `model`: entidades persistidas.
-- `dto`: contratos de entrada e saída.
-- `mapper`: conversão entre entidades e DTOs.
-- `config`: segurança, CORS, JWT, OpenAPI e propriedades.
-- `shared`: exceções e respostas padronizadas.
-
-Fluxo técnico:
-- O frontend consome esta API via HTTP.
-- Autenticação é baseada em JWT com cookie `access_token`.
-- O Spring Security valida o token por header `Authorization` ou por cookie.
-- A identificação do usuário autenticado é obtida por `@CurrentUserId`.
-- A persistência usa PostgreSQL em produção e H2 em testes.
-- Migrações do schema são gerenciadas com Flyway.
-
-Diagrama simplificado:
+O projeto usa **Next.js App Router** com route groups para separar a experiência pública da área autenticada.
 
 ```mermaid
 flowchart LR
-  Browser[Frontend] --> BFF[BFF Next.js]
-  BFF --> API[Spring Boot API]
+  Browser[Browser]
 
-  API --> Security[Spring Security + JWT]
-  API --> Services[Domain Services]
+    UI[App Router]
+    BFF[app/api BFF]
+    Proxy[proxy.ts]
+    Components[Components]
+    Hooks[Hooks]
+    Services[Services]
 
-  Services --> JPA[Spring Data JPA]
-  JPA --> DB[(PostgreSQL)]
-
-  API --> Resend[Resend Email]
-  API --> Google[Google OAuth2]
-
-  API --> n8n[n8n AI Workflow]
-  n8n --> AI[LLM Provider]
-  n8n --> PGVector[(PostgreSQL + pgvector)]
+  Browser --> UI
+  UI --> Proxy
+  UI --> Components
+  Components --> Hooks
+  Hooks --> Services
+  Services --> BFF
+  BFF --> Backend[Spring Boot API]
 ```
 
+Organização principal:
+- `app/(public)`: login, cadastro, recuperação de senha, convite e landing page.
+- `app/(protected)`: workspaces, boards, membros, clientes, configurações e conta.
+- `app/api`: camada BFF que recebe as requisições do frontend e repassa para o backend.
+- `components`: componentes compartilhados, como notificações e inputs reutilizáveis.
+- `services`: integração com a API e com as rotas do BFF.
+- `hooks`: estado e regras de negócio por feature.
+- `types`: tipos de domínio por módulo.
+
+Fluxo técnico:
+- O cliente chama `app/api` via `axios` com base em `/api`.
+- As rotas de `app/api` usam `API_URL` para falar com o backend real.
+- O cookie `access_token` é lido no servidor quando necessário.
+- O arquivo `proxy.ts` protege as rotas do App Router com base na presença do cookie.
+
+
 ## Tecnologias utilizadas
-- Java 21
-- Spring Boot 3.5.16
-- Spring Web
-- Spring Security
-- OAuth2 Client e Resource Server
-- Spring Data JPA
-- Bean Validation
-- Flyway
-- PostgreSQL
-- H2 para testes
-- Swagger/OpenAPI com springdoc
-- JWT com RSA
-- Resend para envio de e-mails
-- Bucket4j para rate limiting
-- Lombok
-- Maven Wrapper
+- Next.js 16.2.12
+- React 19.2.4
+- TypeScript
+- Tailwind CSS 4
+- Axios
+- Framer Motion
+- Lucide React
+- React Markdown
+- jwt-decode
 - Docker
-- n8n para automação e orquestração de fluxos de IA
-- pgvector para armazenamento e busca vetorial
+- ESLint
 
 ## Autenticação
-O projeto usa autenticação baseada em JWT, com o token armazenado em cookie `HttpOnly`.
+O fluxo de autenticação é baseado em cookie de sessão e em rotas BFF do próprio Next.js.
 
 Como funciona:
-- O login em `/auth/login` valida email e senha.
-- Em caso de sucesso, a API gera um JWT assinado com chave RSA.
-- O token é enviado ao navegador em um cookie chamado `access_token`.
-- O backend aceita o JWT tanto via header `Authorization: Bearer ...` quanto via cookie.
-- O endpoint `/auth/me` retorna os dados do usuário autenticado a partir do JWT.
-- O login com Google também gera JWT e seta o mesmo cookie antes de redirecionar para o frontend.
-- Rotas protegidas exigem a authority `ROLE_USER`.
+- O formulário de login envia `email` e `password` para `/api/login`.
+- A rota BFF `app/api/login/route.ts` encaminha a requisição para o backend em `/auth/login`.
+- Se o backend responder com `set-cookie`, o frontend repassa esse cookie para o navegador.
+- O cookie usado no projeto é `access_token`.
+- A rota `app/api/auth/me` lê o cookie, decodifica o JWT com `jwt-decode` e complementa os dados do usuário com a resposta do backend.
+- O `proxy.ts` bloqueia acesso a rotas protegidas quando não há sessão e redireciona para `/login`.
+- Quando o usuário já está autenticado, o `proxy.ts` evita acesso às rotas públicas de autenticação e envia para `/workspaces`.
+- A rota de logout limpa o cookie de sessão.
 
-Detalhes relevantes:
-- O cookie pode usar `secure` e `domain` configuráveis por ambiente.
-- O login, a recuperação de senha, a redefinição de senha, o cadastro e o chat de IA possuem rate limiting.
-- O fluxo de convites aceita apenas o usuário correspondente ao email do convite.
+Também há suporte a:
+- login social via Google OAuth;
+- recuperação de senha;
+- redefinição de senha;
+- alteração de senha na área autenticada.
 
+## Docker
+O projeto possui suporte a containerização com build multi-stage.
+
+Pontos principais:
+- `Dockerfile` usa Node 22 Alpine.
+- O build recebe `API_URL` como argumento.
+- O resultado final usa `output: standalone` do Next.js.
+- A imagem expõe a porta `3000`.
+
+Arquivos disponíveis:
+- `docker-compose.prod.yml`: prepara o frontend atrás do Traefik, com domínio exemplo `flow.allandev.tech`.
+- `docker-compose.local.yml`: expõe a porta `3000:3000` para uso local.
+
+Exemplo de deploy com Docker:
+
+```bash
+docker compose -f docker-compose.prod.yml up --build
+```
 
 ## Deploy
-Em produção, a aplicação é empacotada em um JAR Spring Boot e executada em container.
+Em produção, o frontend é executado como aplicação standalone do Next.js dentro do container gerado pelo `Dockerfile`.
 
-Pontos principais do deploy:
-- `Dockerfile` usa build multi-stage com `eclipse-temurin:21-jdk-alpine` e runtime `21-jre-alpine`.
-- O artefato final é executado com `java -jar app.jar`.
-- O `docker-compose.prod.yml` sobe a API e o PostgreSQL.
-- O proxy reverso é feito com Traefik, com HTTPS utilizando certificados gerenciados automaticamente.
+O arquivo `docker-compose.prod.yml` mostra a configuração usada para publicação:
+- container `allanflow-frontend`;
+- rede externa `proxy`;
+- proxy reverso com Traefik;
+- TLS via `letsencrypt`;
+- host de exemplo `flow.allandev.tech`.
 
-Fluxo de produção:
-- a imagem do backend é construída no container;
-- o PostgreSQL sobe em uma rede interna;
-- a API publica na porta `8080`;
-- o Traefik encaminha requisições para o serviço backend.
+Na prática, o deploy depende de:
+- imagem construída com `API_URL`;
+- container servindo na porta `3000`;
+- proxy reverso apontando para o serviço do frontend.
 
 ## Estrutura do projeto
 Estrutura resumida das principais pastas:
 
 ```text
 .
-├── src/main/java/com/allan/task/manager
-│   ├── auth
-│   ├── ai
-│   ├── board
-│   ├── checklist
-│   ├── client
-│   ├── column
-│   ├── comment
+├── app
+│   ├── (public)
+│   ├── (protected)
+│   ├── api
 │   ├── config
-│   ├── dashboard
-│   ├── email
-│   ├── label
-│   ├── membership
-│   ├── passwordreset
-│   ├── shared
-│   ├── task
-│   ├── user
-│   ├── workspace
-│   └── workspaceinvitation
-├── src/main/resources/db/migration
-├── src/main/resources/application*.yml
-├── src/test/java
+│   ├── globals.css
+│   └── layout.tsx
+├── components
+├── public
+│   └── img
+├── proxy.ts
+├── next.config.ts
 ├── Dockerfile
 └── docker-compose*.yml
 ```
 
 ## Segurança e boas práticas
-- JWT assinado com RSA.
-- Cookie de autenticação `HttpOnly`.
-- CORS configurado por origem permitida.
-- `ControllerAdvice` centralizado para erros e validações.
-- Rate limiting em endpoints sensíveis.
-- Separação clara entre controllers, services, repositories, DTOs e mappers.
-- Validação de payloads com Jakarta Validation.
-- `open-in-view` desabilitado.
-- `ddl-auto: validate` em ambientes reais.
-- Migrações versionadas com Flyway.
-- Proteção de recursos por permissões de workspace e board.
-- Logs e respostas de erro padronizados para facilitar integração com o frontend.
-- Isolamento de dados baseado em workspace (multi-tenant).
+- Headers de segurança definidos em `next.config.ts`.
+- `X-Frame-Options: DENY`.
+- `X-Content-Type-Options: nosniff`.
+- `Referrer-Policy: strict-origin-when-cross-origin`.
+- `Permissions-Policy` restringindo câmera, microfone e geolocalização.
+- Cookies de autenticação tratados de forma `httpOnly`.
+- Rotas protegidas bloqueadas antes da renderização por `proxy.ts`.
+- Validações de formulário nos hooks e serviços por feature.
+- Separação clara entre componentes, hooks, services e types.
+- Comunicação com o backend centralizada em rotas BFF.
+- Estado gerenciado localmente com React hooks e um provider apenas para notificações.
 
 ## Autor
 AllanGaBRs
-
-[LinkedIn](https://linkedin.com/in/allan-gabriel-moreira-da-silva-9090a9271)
