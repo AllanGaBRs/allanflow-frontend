@@ -4,34 +4,18 @@ Frontend da plataforma AllanFlow, desenvolvido com Next.js para centralizar work
 ## Sobre o projeto
 Este repositório contém o frontend da aplicação AllanFlow e atua como a camada de interface entre o usuário e o backend da plataforma.
 
-A aplicação organiza a navegação pública, o fluxo de autenticação e toda a experiência operacional do produto. O frontend consome o backend por meio de uma camada BFF em `app/api`, mantendo a comunicação com a API centralizada e protegendo a navegação com cookies de sessão.
+A aplicação organiza a navegação pública, o fluxo de autenticação e toda a experiência operacional do produto. O frontend utiliza uma camada BFF através das rotas `app/api`, centralizando a comunicação com o backend, mantendo tokens protegidos em cookies `HttpOnly` e controlando o acesso às rotas autenticadas.
 
 ## Funcionalidades
 - Landing page pública de apresentação do produto.
-- Cadastro de conta.
-- Login com email e senha.
-- Login com Google OAuth.
-- Recuperação de senha por código enviado ao email.
-- Redefinição de senha.
-- Aceite de convites para workspace por código.
-- Dashboard de workspaces.
-- Criação, atualização e exclusão de workspaces.
-- Gerenciamento de boards por workspace.
-- Criação, atualização, exclusão e reordenação de colunas.
-- Criação, atualização, exclusão e movimentação de tarefas entre colunas.
-- Drag and drop de tarefas no board.
-- Filtros de tarefas por texto, prioridade, responsável, label e cliente.
-- Visualização detalhada de tarefas com prioridade, prazo, labels, responsáveis e cliente.
-- Comentários em tarefas.
-- Checklists e itens de checklist em tarefas.
-- Gerenciamento de labels por board.
-- Gerenciamento de clientes por workspace.
-- Gerenciamento de membros do workspace.
-- Convite de membros por email e definição de papel.
-- Gerenciamento de membros do board.
+- Autenticação completa com email/senha e Google OAuth.
+- Recuperação, redefinição e alteração de senha.
+- Gerenciamento de workspaces, boards, membros e permissões.
+- Sistema Kanban com criação, movimentação e organização de tarefas.
+- Filtros, labels, clientes, comentários e checklists.
 - Dashboard com indicadores do workspace.
-- Alteração de senha da conta.
-- Assistente de IA dentro da interface.
+- Convites de usuários por email.
+- Assistente de IA integrado à interface.
 
 ## Arquitetura
 O projeto usa **Next.js App Router** com route groups para separar a experiência pública da área autenticada.
@@ -104,25 +88,6 @@ Também há suporte a:
 - redefinição de senha;
 - alteração de senha na área autenticada.
 
-## Docker
-O projeto possui suporte a containerização com build multi-stage.
-
-Pontos principais:
-- `Dockerfile` usa Node 22 Alpine.
-- O build recebe `API_URL` como argumento.
-- O resultado final usa `output: standalone` do Next.js.
-- A imagem expõe a porta `3000`.
-
-Arquivos disponíveis:
-- `docker-compose.prod.yml`: prepara o frontend atrás do Traefik, com domínio exemplo `flow.allandev.tech`.
-- `docker-compose.local.yml`: expõe a porta `3000:3000` para uso local.
-
-Exemplo de deploy com Docker:
-
-```bash
-docker compose -f docker-compose.prod.yml up --build
-```
-
 ## Deploy
 Em produção, o frontend é executado como aplicação standalone do Next.js dentro do container gerado pelo `Dockerfile`.
 
@@ -131,7 +96,6 @@ O arquivo `docker-compose.prod.yml` mostra a configuração usada para publicaç
 - rede externa `proxy`;
 - proxy reverso com Traefik;
 - TLS via `letsencrypt`;
-- host de exemplo `flow.allandev.tech`.
 
 Na prática, o deploy depende de:
 - imagem construída com `API_URL`;
@@ -171,6 +135,9 @@ Estrutura resumida das principais pastas:
 - Separação clara entre componentes, hooks, services e types.
 - Comunicação com o backend centralizada em rotas BFF.
 - Estado gerenciado localmente com React hooks e um provider apenas para notificações.
+- Separação entre áreas públicas e autenticadas utilizando route groups do Next.js App Router.
 
 ## Autor
 AllanGaBRs
+
+[LinkedIn](https://linkedin.com/in/allan-gabriel-moreira-da-silva-9090a9271)
