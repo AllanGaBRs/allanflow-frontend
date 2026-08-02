@@ -1,0 +1,27 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        API_URL: ${API_URL}
+
+    container_name: allanflow-frontend
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    networks:
+      - proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.allanflow-frontend.rule=Host(`flow.allandev.tech`)"
+      - "traefik.http.routers.allanflow-frontend.entrypoints=websecure"
+      - "traefik.http.routers.allanflow-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.allanflow-frontend.loadbalancer.server.port=3000"
+
+networks:
+  proxy:
+    external: true
