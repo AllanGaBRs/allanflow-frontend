@@ -1,14 +1,18 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import type { ComponentType } from "react";
+import { useState, type ComponentType } from "react";
 import {
   ArrowRight,
   Check,
   CheckCircle2,
   Kanban,
+  Menu,
   ShieldCheck,
   Users,
+  X,
 } from "lucide-react";
-import Image from "next/image";
 
 const navigation = [
   { label: "Início", href: "#inicio" },
@@ -95,11 +99,13 @@ function FeatureCard({
 }
 
 export function MarketingLanding() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="scroll-smooth">
+    <div className="scroll-smooth overflow-hidden">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 sm:px-8 lg:px-10 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-8 lg:px-10 xl:gap-5">
+          <div className="flex min-w-0 items-center gap-3">
             <Link href="#inicio" className="inline-flex items-center">
               <Image
                 src="/img/AllanFlow_FullLogo.png"
@@ -107,21 +113,14 @@ export function MarketingLanding() {
                 width={960}
                 height={281}
                 priority
-                className="block h-auto w-70 max-w-none object-contain"
+                className="block h-auto w-36 max-w-none object-contain sm:w-48 lg:w-60 xl:w-[17.5rem]"
               />
-            </Link>
-
-            <Link
-              href="/login"
-              className="inline-flex rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 xl:hidden"
-            >
-              Entrar
             </Link>
           </div>
 
           <nav
             aria-label="Navegação principal"
-            className="flex flex-wrap gap-2 xl:justify-center"
+            className="hidden flex-1 items-center justify-center gap-2 xl:flex"
           >
             {navigation.map((item) => (
               <Link
@@ -134,43 +133,75 @@ export function MarketingLanding() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 xl:inline-flex"
+              className="inline-flex whitespace-nowrap rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:px-4"
             >
               Entrar
             </Link>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 sm:px-5 sm:py-2.5"
             >
               Criar conta
-              <ArrowRight size={16} />
             </Link>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 p-2 text-slate-700 transition hover:bg-slate-50 xl:hidden"
+              aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+            >
+              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+
+          <div
+            id="mobile-menu"
+            className={`w-full overflow-hidden transition-all duration-200 xl:hidden ${
+              isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <nav
+              aria-label="Navegação principal mobile"
+              className="mt-2 grid gap-2 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm"
+            >
+              {navigation.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
       </header>
 
       <main id="inicio">
-        <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 sm:px-8 lg:px-10 lg:pt-20">
+        <section className="mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-8 lg:px-10 lg:pt-20">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm">
               <Check size={15} className="text-sky-700" />
-              Organize trabalho com mais clareza
+              <span className="truncate">Organize trabalho com mais clareza</span>
             </div>
 
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 text-3xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
               AllanFlow centraliza tarefas, equipes e workspaces em um só lugar.
             </h1>
 
-            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
+            <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
               Uma plataforma colaborativa para boards Kanban, comentários,
               checklists, clientes, permissões e convites. Tudo pensado para
               equipes que querem menos ruído e mais visão do trabalho.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/register"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800"
@@ -206,7 +237,7 @@ export function MarketingLanding() {
 
         <section
           id="recursos"
-          className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-10"
+          className="mx-auto max-w-7xl px-4 pb-16 sm:px-8 lg:px-10"
         >
           <SectionTitle
             eyebrow="Recursos"
@@ -223,7 +254,7 @@ export function MarketingLanding() {
 
         <section
           id="como-funciona"
-          className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-10"
+          className="mx-auto max-w-7xl px-4 pb-16 sm:px-8 lg:px-10"
         >
           <SectionTitle
             eyebrow="Como funciona"
@@ -250,7 +281,7 @@ export function MarketingLanding() {
 
         <section
           id="seguranca"
-          className="mx-auto max-w-7xl px-6 pb-24 sm:px-8 lg:px-10"
+          className="mx-auto max-w-7xl px-4 pb-20 sm:px-8 lg:px-10"
         >
           <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div>
@@ -277,8 +308,8 @@ export function MarketingLanding() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-6 pb-24 sm:px-8 lg:px-10">
-          <div className="rounded-4xl border border-slate-200 bg-slate-950 px-6 py-10 text-white sm:px-8">
+        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-8 lg:px-10">
+          <div className="rounded-4xl border border-slate-200 bg-slate-950 px-5 py-8 text-white sm:px-8 sm:py-10">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-300">
@@ -314,7 +345,7 @@ export function MarketingLanding() {
       </main>
 
       <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 sm:px-8 lg:px-10 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-8 lg:px-10 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="max-w-xl">
             <Image
               src="/img/AllanFlow_FullLogo.png"
@@ -331,7 +362,11 @@ export function MarketingLanding() {
 
           <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
             {navigation.map((item) => (
-              <Link key={item.label} href={item.href} className="hover:text-slate-950">
+              <Link
+                key={item.label}
+                href={item.href}
+                className="hover:text-slate-950"
+              >
                 {item.label}
               </Link>
             ))}
