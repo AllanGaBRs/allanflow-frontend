@@ -5,11 +5,12 @@ export async function POST() {
 
   response.cookies.set("access_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "lax",
+    domain: ".allandev.tech",
     path: "/",
     maxAge: 0,
   });
-
+  
   return response;
 }
