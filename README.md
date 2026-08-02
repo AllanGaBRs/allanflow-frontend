@@ -36,6 +36,26 @@ A aplicação organiza a navegação pública, o fluxo de autenticação e toda 
 ## Arquitetura
 O projeto usa **Next.js App Router** com route groups para separar a experiência pública da área autenticada.
 
+```mermaid
+flowchart LR
+  Browser[Browser]
+
+    UI[App Router]
+    BFF[app/api BFF]
+    Proxy[proxy.ts]
+    Components[Components]
+    Hooks[Hooks]
+    Services[Services]
+
+  Browser --> UI
+  UI --> Proxy
+  UI --> Components
+  Components --> Hooks
+  Hooks --> Services
+  Services --> BFF
+  BFF --> Backend[Spring Boot API]
+```
+
 Organização principal:
 - `app/(public)`: login, cadastro, recuperação de senha, convite e landing page.
 - `app/(protected)`: workspaces, boards, membros, clientes, configurações e conta.
