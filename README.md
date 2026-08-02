@@ -116,7 +116,6 @@ O arquivo `docker-compose.prod.yml` mostra a configuração usada para publicaç
 - rede externa `proxy`;
 - proxy reverso com Traefik;
 - TLS via `letsencrypt`;
-- host de exemplo `flow.allandev.tech`.
 
 Na prática, o deploy depende de:
 - imagem construída com `API_URL`;
