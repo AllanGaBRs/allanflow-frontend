@@ -87,7 +87,7 @@ export function TaskCard({
           onOpen?.();
         }
       }}
-      className={`group relative cursor-grab overflow-hidden rounded-lg border border-slate-200 bg-white p-3 pl-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow active:cursor-grabbing ${
+      className={`group relative max-h-80 cursor-grab overflow-y-auto overflow-x-hidden rounded-lg border border-slate-200 bg-white p-3 pl-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow active:cursor-grabbing ${
         dragging ? "opacity-50 ring-2 ring-slate-300" : ""
       }`}
     >
