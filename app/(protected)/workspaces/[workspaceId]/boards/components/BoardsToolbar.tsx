@@ -27,7 +27,7 @@ export function BoardsToolbar({
       <label className="sr-only" htmlFor="board-filter">
         Selecionar board
       </label>
-      <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:flex-wrap xl:items-center">
+      <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)_auto] lg:items-start">
         <select
           id="board-filter"
           value={selectedBoardId}
@@ -46,14 +46,14 @@ export function BoardsToolbar({
           )}
         </select>
 
-        <div className="min-w-0 flex-1">{filtersSlot}</div>
+        <div className="min-w-0">{filtersSlot}</div>
 
         {canManageBoards && (
           <Link
             href={`/workspaces/${workspaceId}/boards/manage`}
-            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className="inline-flex min-h-9 w-fit max-w-full shrink-0 justify-self-start items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
-            <Settings2 size={18} />
+            <Settings2 size={16} />
             Gerenciar boards
           </Link>
         )}
