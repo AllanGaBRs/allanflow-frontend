@@ -85,7 +85,6 @@ Como funciona:
 
 Também há suporte a:
 - login social via Google OAuth;
-- recuperação de senha;
 - redefinição de senha;
 - alteração de senha na área autenticada.
 
