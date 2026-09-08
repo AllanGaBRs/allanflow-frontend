@@ -20,6 +20,7 @@ import type {
 } from "../types/document";
 import { BoardEmptyState } from "./DocumentsPanelEmptyState";
 import { DocumentCreateModal } from "./DocumentCreateModal";
+import { DocumentDeleteModal } from "./DocumentDeleteModal";
 import { DocumentEditor } from "./DocumentEditor";
 import { DocumentTree } from "./DocumentTree";
 
@@ -336,6 +337,9 @@ export function DocumentsPanel({
   const [createType, setCreateType] = useState<DocumentType>("FILE");
   const [createParentId, setCreateParentId] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<
+    DocumentItem | DocumentTreeItem | null
+  >(null);
   const [draggedDocument, setDraggedDocument] =
     useState<DraggedDocument | null>(null);
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
@@ -354,7 +358,9 @@ export function DocumentsPanel({
   );
   const actionLoading = saving || deleting || moving || loadingDocument;
   const dragLocked = deleting || moving || loadingDocument;
-  useToastMessage(error || localError, { title: "Erro nos documentos" });
+  useToastMessage(documentToDelete ? localError : error || localError, {
+    title: "Erro nos documentos",
+  });
 
   useEffect(() => {
     const folderIds = collectFolderIds(documentsTree);
@@ -596,6 +602,8 @@ export function DocumentsPanel({
     if (deleted && selectedDocument?.id === document.id) {
       clearSelectedDocument();
     }
+
+    return deleted;
   }
 
   if (!boardId) {
@@ -746,7 +754,7 @@ export function DocumentsPanel({
                       setCreateParentId(parentId ?? "");
                       setCreateOpen(true);
                     }}
-                    onDelete={(document) => void handleDelete(document)}
+                    onDelete={setDocumentToDelete}
                     onDragStart={handleDocumentDragStart}
                     onDragEnd={clearDragState}
                     onDragOverFolder={handleDragOverFolder}
@@ -788,6 +796,16 @@ export function DocumentsPanel({
           />
         )}
       </div>
+
+      {documentToDelete && (
+        <DocumentDeleteModal
+          document={documentToDelete}
+          loading={deleting}
+          error={error}
+          onClose={() => setDocumentToDelete(null)}
+          onConfirm={() => handleDelete(documentToDelete)}
+        />
+      )}
     </section>
   );
 }
