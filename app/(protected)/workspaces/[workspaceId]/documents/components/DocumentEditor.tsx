@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useEffect, useRef } from "react";
@@ -37,6 +37,21 @@ type EditorButtonProps = {
 const emptyEditorContent = {
   type: "doc",
   content: [],
+};
+
+const inactiveEditorState = {
+  isHeading1: false,
+  isHeading2: false,
+  isBold: false,
+  isItalic: false,
+  isBulletList: false,
+  isOrderedList: false,
+  isBlockquote: false,
+  isCodeBlock: false,
+  canBold: false,
+  canItalic: false,
+  canUndo: false,
+  canRedo: false,
 };
 
 function normalizeContent(content: DocumentContent) {
@@ -78,6 +93,25 @@ function Toolbar({
   disabled: boolean;
   statusLabel?: string;
 }) {
+  const editorState = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => ({
+      isHeading1: currentEditor?.isActive("heading", { level: 1 }) ?? false,
+      isHeading2: currentEditor?.isActive("heading", { level: 2 }) ?? false,
+      isBold: currentEditor?.isActive("bold") ?? false,
+      isItalic: currentEditor?.isActive("italic") ?? false,
+      isBulletList: currentEditor?.isActive("bulletList") ?? false,
+      isOrderedList: currentEditor?.isActive("orderedList") ?? false,
+      isBlockquote: currentEditor?.isActive("blockquote") ?? false,
+      isCodeBlock: currentEditor?.isActive("codeBlock") ?? false,
+      canBold: currentEditor?.can().chain().focus().toggleBold().run() ?? false,
+      canItalic:
+        currentEditor?.can().chain().focus().toggleItalic().run() ?? false,
+      canUndo: currentEditor?.can().chain().focus().undo().run() ?? false,
+      canRedo: currentEditor?.can().chain().focus().redo().run() ?? false,
+    }),
+  }) ?? inactiveEditorState;
+
   if (!editor) {
     return null;
   }
@@ -87,7 +121,7 @@ function Toolbar({
       <div className="flex flex-wrap items-center gap-2">
         <EditorButton
           label="Título 1"
-          active={editor.isActive("heading", { level: 1 })}
+          active={editorState.isHeading1}
           disabled={disabled}
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         >
@@ -95,7 +129,7 @@ function Toolbar({
         </EditorButton>
         <EditorButton
           label="Título 2"
-          active={editor.isActive("heading", { level: 2 })}
+          active={editorState.isHeading2}
           disabled={disabled}
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         >
@@ -103,23 +137,23 @@ function Toolbar({
         </EditorButton>
         <EditorButton
           label="Negrito"
-          active={editor.isActive("bold")}
-          disabled={disabled || !editor.can().chain().focus().toggleBold().run()}
+          active={editorState.isBold}
+          disabled={disabled || !editorState.canBold}
           onClick={() => editor.chain().focus().toggleBold().run()}
         >
           <Bold size={16} />
         </EditorButton>
         <EditorButton
           label="Itálico"
-          active={editor.isActive("italic")}
-          disabled={disabled || !editor.can().chain().focus().toggleItalic().run()}
+          active={editorState.isItalic}
+          disabled={disabled || !editorState.canItalic}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         >
           <Italic size={16} />
         </EditorButton>
         <EditorButton
           label="Lista"
-          active={editor.isActive("bulletList")}
+          active={editorState.isBulletList}
           disabled={disabled}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
@@ -127,7 +161,7 @@ function Toolbar({
         </EditorButton>
         <EditorButton
           label="Lista numerada"
-          active={editor.isActive("orderedList")}
+          active={editorState.isOrderedList}
           disabled={disabled}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         >
@@ -135,7 +169,7 @@ function Toolbar({
         </EditorButton>
         <EditorButton
           label="Citação"
-          active={editor.isActive("blockquote")}
+          active={editorState.isBlockquote}
           disabled={disabled}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
         >
@@ -143,7 +177,7 @@ function Toolbar({
         </EditorButton>
         <EditorButton
           label="Código"
-          active={editor.isActive("codeBlock")}
+          active={editorState.isCodeBlock}
           disabled={disabled}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         >
@@ -152,14 +186,14 @@ function Toolbar({
         <div className="mx-1 h-6 w-px bg-slate-200" />
         <EditorButton
           label="Desfazer"
-          disabled={disabled || !editor.can().chain().focus().undo().run()}
+          disabled={disabled || !editorState.canUndo}
           onClick={() => editor.chain().focus().undo().run()}
         >
           <Undo2 size={16} />
         </EditorButton>
         <EditorButton
           label="Refazer"
-          disabled={disabled || !editor.can().chain().focus().redo().run()}
+          disabled={disabled || !editorState.canRedo}
           onClick={() => editor.chain().focus().redo().run()}
         >
           <Redo2 size={16} />
