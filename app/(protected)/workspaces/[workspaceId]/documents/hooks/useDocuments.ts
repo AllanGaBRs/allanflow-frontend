@@ -219,8 +219,20 @@ export function useDocuments(
         selectedDocument.id,
         updatePayload(selectedDocument, validation.title, content)
       );
-      setSelectedDocument(updatedDocument);
-      await loadDocumentsTree({ silent: true });
+      setSelectedDocument((current) => current?.id === updatedDocument.id
+        ? { ...current, title: updatedDocument.title, content: updatedDocument.content }
+        : current);
+      // Saving content does not require fetching every document's tree again.
+      setDocumentsTree((tree) => {
+        function updateTitles(items: DocumentTreeItem[]): DocumentTreeItem[] {
+          return items.map((item) => ({
+            ...item,
+            title: item.id === updatedDocument.id ? updatedDocument.title : item.title,
+            children: updateTitles(item.children),
+          })).sort((a, b) => a.title.localeCompare(b.title));
+        }
+        return updateTitles(tree);
+      });
       return true;
     } catch (err: unknown) {
       setError(

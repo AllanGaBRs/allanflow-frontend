@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { DragEvent } from "react";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -23,8 +23,13 @@ import { DocumentCreateModal } from "./DocumentCreateModal";
 import { DocumentDeleteModal } from "./DocumentDeleteModal";
 import { DocumentEditor } from "./DocumentEditor";
 import { DocumentTree } from "./DocumentTree";
+import { DocumentAutosave } from "../utils/documentAutosave";
+
+export type DocumentsSaveHandle = { flush: () => Promise<boolean> };
 
 type DocumentsPanelProps = {
+  ref?: Ref<DocumentsSaveHandle>;
+  switchingBoard?: boolean;
   workspaceId: string;
   boardId: string | undefined;
   boardSelector?: ReactNode;
@@ -113,10 +118,6 @@ type DraggedDocument = {
   type: DocumentType;
 };
 
-function contentSnapshot(content: DocumentContent) {
-  return JSON.stringify(content ?? null);
-}
-
 function documentFromTreeItem(document: DocumentTreeItem): DraggedDocument {
   return {
     id: document.id,
@@ -176,6 +177,7 @@ function hasDocumentDragData(
 }
 
 type SelectedDocumentEditorProps = {
+  ref?: Ref<DocumentsSaveHandle>;
   document: DocumentItem;
   deleting: boolean;
   loadingDocument: boolean;
@@ -183,66 +185,37 @@ type SelectedDocumentEditorProps = {
 };
 
 function SelectedDocumentEditor({
+  ref,
   document,
   deleting,
   loadingDocument,
   onAutoSave,
 }: SelectedDocumentEditorProps) {
   const [draftTitle, setDraftTitle] = useState(document.title);
-  const [draftContent, setDraftContent] = useState<DocumentContent>(
-    document.content
-  );
   const [saveStatus, setSaveStatus] = useState("Salvo");
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedSnapshotRef = useRef({
-    title: document.title.trim(),
-    content: contentSnapshot(document.content),
-  });
+  // The keyed editor keeps this queue bound to the document it was opened for.
+  const [autosave] = useState(() => new DocumentAutosave(
+    { title: document.title, content: document.content },
+    onAutoSave,
+    setSaveStatus
+  ));
   const editorDisabled = deleting || loadingDocument;
 
-  function clearScheduledSave() {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = null;
+  useImperativeHandle(ref, () => ({ flush: () => autosave.flush() }), [autosave]);
+
+  useEffect(() => {
+    function beforeUnload(event: BeforeUnloadEvent) {
+      if (!autosave.pending) return;
+      event.preventDefault();
+      event.returnValue = "";
     }
-  }
-
-  function scheduleAutoSave(title: string, content: DocumentContent) {
-    clearScheduledSave();
-
-    const trimmedTitle = title.trim();
-    const nextContentSnapshot = contentSnapshot(content);
-
-    if (trimmedTitle.length < 2) {
-      setSaveStatus("Título muito curto");
-      return;
-    }
-
-    if (
-      trimmedTitle === lastSavedSnapshotRef.current.title &&
-      nextContentSnapshot === lastSavedSnapshotRef.current.content
-    ) {
-      setSaveStatus("Salvo");
-      return;
-    }
-
-    setSaveStatus("Aguardando...");
-    saveTimeoutRef.current = setTimeout(() => {
-      setSaveStatus("Salvando...");
-      void onAutoSave(trimmedTitle, content).then((saved) => {
-        if (saved) {
-          lastSavedSnapshotRef.current = {
-            title: trimmedTitle,
-            content: nextContentSnapshot,
-          };
-        }
-
-        setSaveStatus(saved ? "Salvo" : "Erro ao salvar");
-      });
-    }, 3000);
-  }
-
-  useEffect(() => clearScheduledSave, []);
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      // Best effort for other in-app routes; document/board switches await flush.
+      void autosave.flush();
+    };
+  }, [autosave]);
 
   return (
     <div
@@ -269,10 +242,17 @@ function SelectedDocumentEditor({
                 const nextTitle = event.target.value;
 
                 setDraftTitle(nextTitle);
-                scheduleAutoSave(nextTitle, draftContent);
+                autosave.change({ title: nextTitle });
               }}
               className="min-h-11 w-full rounded-lg border border-slate-200 px-3 text-base font-semibold text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
             />
+            {(saveStatus === "Erro ao salvar") && (
+              <button type="button" disabled={editorDisabled}
+                onClick={() => void autosave.flush()}
+                className="mt-2 text-sm font-medium text-blue-700 underline">
+                Tentar salvar novamente
+              </button>
+            )}
             {document.type === "FOLDER" && (
               <p className="mt-2 text-xs font-medium text-slate-500">
                 Pasta · {saveStatus}
@@ -296,14 +276,13 @@ function SelectedDocumentEditor({
           </div>
         )}
 
-        {!loadingDocument && document.type === "FILE" && (
+        {document.type === "FILE" && (
           <DocumentEditor
             content={document.content}
             disabled={editorDisabled}
             statusLabel={`Documento · ${saveStatus}`}
             onChange={(nextContent) => {
-              setDraftContent(nextContent);
-              scheduleAutoSave(draftTitle, nextContent);
+              autosave.change({ content: nextContent });
             }}
           />
         )}
@@ -313,6 +292,8 @@ function SelectedDocumentEditor({
 }
 
 export function DocumentsPanel({
+  ref,
+  switchingBoard = false,
   workspaceId,
   boardId,
   boardSelector,
@@ -333,6 +314,28 @@ export function DocumentsPanel({
     deleteDocument,
     moveDocument,
   } = useDocuments(workspaceId, boardId);
+  const editorRef = useRef<DocumentsSaveHandle>(null);
+  const transitionRef = useRef(false);
+  const [transitioning, setTransitioning] = useState(false);
+  useImperativeHandle(ref, () => ({
+    flush: async () => {
+      if (transitionRef.current) return false;
+      return await editorRef.current?.flush() ?? true;
+    },
+  }), []);
+
+  async function afterSave(action: () => Promise<boolean>) {
+    if (transitionRef.current || switchingBoard) return false;
+    transitionRef.current = true;
+    setTransitioning(true);
+    try {
+      if (editorRef.current && !await editorRef.current.flush()) return false;
+      return await action();
+    } finally {
+      transitionRef.current = false;
+      setTransitioning(false);
+    }
+  }
   const [createTitle, setCreateTitle] = useState("");
   const [createType, setCreateType] = useState<DocumentType>("FILE");
   const [createParentId, setCreateParentId] = useState("");
@@ -356,8 +359,8 @@ export function DocumentsPanel({
     () => collectFolders(documentsTree),
     [documentsTree]
   );
-  const actionLoading = saving || deleting || moving || loadingDocument;
-  const dragLocked = deleting || moving || loadingDocument;
+  const actionLoading = saving || deleting || moving || loadingDocument || transitioning || switchingBoard;
+  const dragLocked = deleting || moving || loadingDocument || transitioning || switchingBoard;
   useToastMessage(documentToDelete ? localError : error || localError, {
     title: "Erro nos documentos",
   });
@@ -572,12 +575,12 @@ export function DocumentsPanel({
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const created = await createDocument(
+    const created = await afterSave(() => createDocument(
       createTitle,
       createType,
       createParentId || null,
       createType === "FILE" ? emptyDocumentContent : null
-    );
+    ));
 
     if (created) {
       setCreateTitle("");
@@ -597,7 +600,7 @@ export function DocumentsPanel({
   }
 
   async function handleDelete(document: DocumentItem | DocumentTreeItem) {
-    const deleted = await deleteDocument(document.id);
+    const deleted = await afterSave(() => deleteDocument(document.id));
 
     if (deleted && selectedDocument?.id === document.id) {
       clearSelectedDocument();
@@ -619,11 +622,11 @@ export function DocumentsPanel({
     <section
       className={`grid min-h-0 min-w-0 flex-1 gap-4 overflow-hidden ${
         structureCollapsed
-          ? "lg:grid-cols-[3.5rem_minmax(0,1fr)]"
-          : "lg:grid-cols-[22rem_minmax(0,1fr)]"
+          ? "lg:grid-cols-[minmax(0,1fr)_3.5rem]"
+          : "lg:grid-cols-[minmax(0,1fr)_22rem]"
       }`}
     >
-      <aside className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white">
+      <aside className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white lg:order-2">
         <div className="border-b border-slate-200 p-4">
           <div
             className={`flex items-center gap-3 ${
@@ -665,9 +668,9 @@ export function DocumentsPanel({
               title={structureCollapsed ? "Expandir" : "Minimizar"}
             >
               {structureCollapsed ? (
-                <ChevronsRight size={16} />
-              ) : (
                 <ChevronsLeft size={16} />
+              ) : (
+                <ChevronsRight size={16} />
               )}
             </button>
           </div>
@@ -747,7 +750,11 @@ export function DocumentsPanel({
                     collapsedFolderIds={collapsedFolderIds}
                     disabled={actionLoading}
                     dragDisabled={dragLocked}
-                    onSelect={(documentId) => void selectDocument(documentId)}
+                    onSelect={(documentId) => {
+                      if (documentId !== selectedDocument?.id) {
+                        void afterSave(() => selectDocument(documentId));
+                      }
+                    }}
                     onToggleFolder={handleToggleFolder}
                     onCreate={(type, parentId) => {
                       setCreateType(type);
@@ -769,7 +776,7 @@ export function DocumentsPanel({
         )}
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white lg:order-1">
         {!selectedDocument && (
           <div className="flex flex-1 items-center justify-center p-8 text-center">
             <div className="max-w-sm">
@@ -780,7 +787,7 @@ export function DocumentsPanel({
                 Selecione um documento
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                A árvore fica à esquerda. Ao abrir um arquivo, o conteúdo aparece aqui.
+                Selecione um arquivo na estrutura de documentos para abrir o conteúdo aqui.
               </p>
             </div>
           </div>
@@ -788,9 +795,10 @@ export function DocumentsPanel({
 
         {selectedDocument && (
           <SelectedDocumentEditor
+            ref={editorRef}
             key={selectedDocument.id}
             document={selectedDocument}
-            deleting={deleting}
+            deleting={deleting || transitioning || switchingBoard}
             loadingDocument={loadingDocument}
             onAutoSave={handleAutoSave}
           />
