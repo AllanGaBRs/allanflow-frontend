@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { WorkspaceLayout } from "../../../components/WorkspaceLayout";
 import { useToastMessage } from "@/components/notifications/useToastMessage";
 import { useBoards } from "../../boards/hooks/useBoards";
 import type { WorkspaceDetails } from "../../types/workspaceDetails";
-import { DocumentsPanel } from "./DocumentsPanel";
+import { DocumentsPanel, type DocumentsSaveHandle } from "./DocumentsPanel";
 
 type WorkspaceDocumentsPageProps = {
   workspaceId: string;
@@ -18,9 +18,25 @@ export function WorkspaceDocumentsPage({
   initialWorkspace,
   initialError,
 }: WorkspaceDocumentsPageProps) {
+  const documentsRef = useRef<DocumentsSaveHandle>(null);
+  const switchingRef = useRef(false);
+  const [switchingBoard, setSwitchingBoard] = useState(false);
   const { boards, loading, error } = useBoards(workspaceId);
   const [selectedBoardIdState, setSelectedBoardIdState] = useState("");
   const selectedBoardId = selectedBoardIdState || boards[0]?.id || "";
+
+  async function changeBoard(boardId: string) {
+    if (switchingRef.current) return;
+    switchingRef.current = true;
+    setSwitchingBoard(true);
+    try {
+      if (documentsRef.current && !await documentsRef.current.flush()) return;
+      setSelectedBoardIdState(boardId);
+    } finally {
+      switchingRef.current = false;
+      setSwitchingBoard(false);
+    }
+  }
 
   useToastMessage(initialError, { title: "Workspace" });
   useToastMessage(error, { title: "Erro ao buscar boards" });
@@ -48,6 +64,9 @@ export function WorkspaceDocumentsPage({
 
           {!loading && selectedBoardId && (
             <DocumentsPanel
+              key={`${workspaceId}:${selectedBoardId}`}
+              ref={documentsRef}
+              switchingBoard={switchingBoard}
               workspaceId={workspaceId}
               boardId={selectedBoardId}
               boardSelector={
@@ -62,10 +81,10 @@ export function WorkspaceDocumentsPage({
                   <select
                     id="documents-board"
                     value={selectedBoardId}
-                    disabled={loading || boards.length === 0}
+                    disabled={loading || switchingBoard || boards.length === 0}
                     className="min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500"
                     onChange={(event) =>
-                      setSelectedBoardIdState(event.target.value)
+                      void changeBoard(event.target.value)
                     }
                   >
                     {boards.length === 0 ? (
