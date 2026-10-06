@@ -24,3 +24,79 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.document-editor .ProseMirror {
+  min-height: 100%;
+  padding: 1rem;
+  color: #0f172a;
+  outline: none;
+}
+
+.document-editor .ProseMirror p {
+  margin: 0.5rem 0;
+}
+
+.document-editor .ProseMirror h1 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.document-editor .ProseMirror h2 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.document-editor .ProseMirror ul,
+.document-editor .ProseMirror ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.document-editor .ProseMirror ul {
+  list-style: disc;
+}
+
+.document-editor .ProseMirror ol {
+  list-style: decimal;
+}
+
+.document-editor .ProseMirror blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid #bfdbfe;
+  padding-left: 1rem;
+  color: #475569;
+}
+
+.document-editor .ProseMirror code {
+  border-radius: 0.375rem;
+  background: #f1f5f9;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875em;
+}
+
+.document-editor .ProseMirror pre {
+  margin: 1rem 0;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  padding: 0.875rem 1rem;
+  color: #f8fafc;
+}
+
+.document-editor .ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.document-editor .ProseMirror p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: #94a3b8;
+  content: attr(data-placeholder);
+  pointer-events: none;
+}

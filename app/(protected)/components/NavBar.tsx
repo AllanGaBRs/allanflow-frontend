@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   LayoutDashboard,
   BriefcaseBusiness,
+  FileText,
   FolderKanban,
   Kanban,
   Settings,
@@ -55,6 +56,11 @@ export function NavBar({
       icon: Tags,
     },
     {
+      label: "Documentos",
+      href: workspaceId ? `/workspaces/${workspaceId}/documents` : "/workspaces",
+      icon: FileText,
+    },
+    {
       label: "Clientes",
       href: workspaceId ? `/workspaces/${workspaceId}/clients` : "/workspaces",
       icon: BriefcaseBusiness,
@@ -72,15 +78,21 @@ export function NavBar({
         defaultMenuItems[2],
         defaultMenuItems[3],
         defaultMenuItems[4],
+        defaultMenuItems[5],
         {
           label: "Membros",
           href: `/workspaces/${workspaceId}/members`,
           icon: Users,
         },
-        defaultMenuItems[5],
+        defaultMenuItems[6],
       ]
       : workspaceId
-        ? [defaultMenuItems[2], defaultMenuItems[3], defaultMenuItems[4]]
+        ? [
+          defaultMenuItems[2],
+          defaultMenuItems[3],
+          defaultMenuItems[4],
+          defaultMenuItems[5],
+        ]
         : defaultMenuItems;
   const workspacesMenuItems = defaultMenuItems.filter(
     (item) => item.label === "Workspaces"
