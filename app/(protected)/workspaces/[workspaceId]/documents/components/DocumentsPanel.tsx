@@ -617,13 +617,13 @@ export function DocumentsPanel({
 
   return (
     <section
-      className={`grid min-h-0 min-w-0 flex-1 gap-4 overflow-hidden ${
+      className={`grid min-h-0 min-w-0 flex-1 gap-4 overflow-hidden transition-[grid-template-columns] duration-300 motion-reduce:transition-none ${
         structureCollapsed
-          ? "lg:grid-cols-[3.5rem_minmax(0,1fr)]"
-          : "lg:grid-cols-[22rem_minmax(0,1fr)]"
+          ? "lg:grid-cols-[minmax(0,1fr)_3.5rem]"
+          : "lg:grid-cols-[minmax(0,1fr)_22rem]"
       }`}
     >
-      <aside className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white">
+      <aside className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white lg:col-start-2 lg:row-start-1">
         <div className="border-b border-slate-200 p-4">
           <div
             className={`flex items-center gap-3 ${
@@ -665,9 +665,9 @@ export function DocumentsPanel({
               title={structureCollapsed ? "Expandir" : "Minimizar"}
             >
               {structureCollapsed ? (
-                <ChevronsRight size={16} />
-              ) : (
                 <ChevronsLeft size={16} />
+              ) : (
+                <ChevronsRight size={16} />
               )}
             </button>
           </div>
@@ -769,7 +769,7 @@ export function DocumentsPanel({
         )}
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white lg:col-start-1 lg:row-start-1">
         {!selectedDocument && (
           <div className="flex flex-1 items-center justify-center p-8 text-center">
             <div className="max-w-sm">
@@ -780,7 +780,7 @@ export function DocumentsPanel({
                 Selecione um documento
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                A árvore fica à esquerda. Ao abrir um arquivo, o conteúdo aparece aqui.
+                Escolha um arquivo no menu para abrir o conteúdo aqui.
               </p>
             </div>
           </div>
