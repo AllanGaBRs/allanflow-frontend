@@ -231,10 +231,27 @@ export function DocumentEditor({
     content: normalizeContent(content),
     editable: !disabled,
     immediatelyRender: false,
+    editorProps: {
+      handleKeyDown: (view, event) => {
+        if (
+          event.key !== "Tab" ||
+          event.shiftKey ||
+          event.ctrlKey ||
+          event.altKey ||
+          event.metaKey ||
+          event.isComposing ||
+          !view.editable
+        ) {
+          return false;
+        }
+
+        event.preventDefault();
+        view.dispatch(view.state.tr.insertText("    ").scrollIntoView());
+        return true;
+      },
+    },
     onUpdate: ({ editor: currentEditor }) => {
-      window.setTimeout(() => {
-        onChangeRef.current(currentEditor.getJSON());
-      }, 0);
+      onChangeRef.current(currentEditor.getJSON());
     },
   }, []);
 
