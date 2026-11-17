@@ -620,7 +620,7 @@ export function DocumentsPanel({
 
   return (
     <section
-      className={`grid min-h-0 min-w-0 flex-1 gap-4 overflow-hidden ${
+      className={`grid min-h-0 min-w-0 flex-1 gap-4 overflow-hidden transition-[grid-template-columns] duration-300 motion-reduce:transition-none ${
         structureCollapsed
           ? "lg:grid-cols-[minmax(0,1fr)_3.5rem]"
           : "lg:grid-cols-[minmax(0,1fr)_22rem]"
@@ -776,7 +776,7 @@ export function DocumentsPanel({
         )}
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white lg:order-1">
+      <div className="flex min-h-0 min-w-0 flex-col rounded-lg border border-slate-200 bg-white lg:col-start-1 lg:row-start-1">
         {!selectedDocument && (
           <div className="flex flex-1 items-center justify-center p-8 text-center">
             <div className="max-w-sm">
